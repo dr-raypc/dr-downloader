@@ -2,47 +2,77 @@
 ### August 28th, 2020
 ### Script created by Raymond Mayer
 
-$binpath = "C:\Program Files (x86)\Dr. Downloader\bin\"
-$downloadpath = "$($env:USERPROFILE)\Desktop\New Downloads"
+$binpath = "C:\Program Files (x86)\Dr. Downloader\bin"
+$downloadlocation = "$($env:USERPROFILE)\Desktop\New Downloads"
+$tmpfolder = "C:\Program Files (x86)\Dr. Downloader\temp"
 
-function youtubeRun {
+
+Function DownloadFile {
+	Param(
+		[String]$URLToDownload,
+		[String]$SaveLocation
+	)
+	(New-Object System.Net.WebClient).DownloadFile("$URLToDownload", "$TempFolder\download.tmp")
+	Move-Item -Path "$TempFolder\download.tmp" -Destination "$SaveLocation" -Force
+}
+
+
+Function DownloadYoutube-dl {
+	DownloadFile "http://yt-dl.org/downloads/latest/youtube-dl.exe" "$binpath\dl.exe"
+}
+
+
+Function DownloadFfmpeg {
+	If (([environment]::Is64BitOperatingSystem) -eq $True) {
+		DownloadFile "http://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-latest-win64-static.zip" "$binpath\ffmpeg_latest.zip"
+	}
+	Else {
+		DownloadFile "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-latest-win32-static.zip" "$binpath\ffmpeg_latest.zip"
+	}
+	Expand-Archive -Path "$binpath\ffmpeg_latest.zip" -DestinationPath "$binpath"
+	Copy-Item -Path "$binpath\ffmpeg-*-win*-static\bin\*" -Destination "$binpath" -Recurse -Filter "*.exe" -Force -ErrorAction Silent 
+	Remove-Item -Path "$binpath\ffmpeg_latest.zip" -Force
+	Remove-Item -Path "$binpath\ffmpeg-*-win*-static" -Recurse -Force
+}
+
+
+function audioRun {
 	Clear-Host
 	Write-Host ""
 	Write-Host "                             DR. RAY DOWNLOADER v3.0 "
 	Write-Host "                                      _____  "
 	Write-Host "                                     ( o o ) "
 	Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
-	Write-Host "                               DR. RAY     YOUTUBE DOWNLOADER          "
+	Write-Host "                               DR. RAY     AUDIO DOWNLOADER          "
 	Write-Host " --------------------------------------------------------------------------------"
 	Write-Host ""
+	$audioURL = (Read-Host "URL").Trim()
 	Write-Host ""
+	Write-Host ""
+	Write-Host "`nDownloading video from: $audioURL`n"
+	$audioDWNLD = "dl -o ""$downloadlocation\%(title)s.%(ext)s"" --format bestaudio -x --audio-format mp3 --audio-quality 0 --ignore-errors --console-title --no-mtime ""$audioURL"""
+	Invoke-Expression "$audioDWNLD"
 }
 
-function soundcloudRun {
+
+function  videoRun {
 	Clear-Host
 	Write-Host ""
 	Write-Host "                             DR. RAY DOWNLOADER v3.0 "
 	Write-Host "                                      _____  "
 	Write-Host "                                     ( o o ) "
 	Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
-	Write-Host "                               DR. RAY     SOUNDCLOUD DOWNLOADER          "
+	Write-Host "                               DR. RAY     VIDEO DOWNLOAER         "
 	Write-Host " --------------------------------------------------------------------------------"
 	Write-Host ""
+	$videoURL = (Read-Host "URL").Trim()
 	Write-Host ""
+	Write-Host ""
+	Write-Host "`nDownloading video from: $videoURL`n"
+	$videoDWNLD = "dl -o ""$downloadlocation\%(title)s.%(ext)s"" --ignore-errors --console-title --no-mtime ""$videoURL"""
+	Invoke-Expression "$videoDWNLD"
 }
 
-function  youtubeMP3Run {
-	Clear-Host
-	Write-Host ""
-	Write-Host "                             DR. RAY DOWNLOADER v3.0 "
-	Write-Host "                                      _____  "
-	Write-Host "                                     ( o o ) "
-	Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
-	Write-Host "                               DR. RAY     YOUTUBE2MPL3 DOWNLOAER         "
-	Write-Host " --------------------------------------------------------------------------------"
-	Write-Host ""
-	Write-Host ""
-}
 
 function drrayUpdate {
 	Clear-Host
@@ -54,8 +84,44 @@ function drrayUpdate {
 	Write-Host "                               DR. RAY     UPDATER          "
 	Write-Host " --------------------------------------------------------------------------------"
 	Write-Host ""
-	Write-Host ""
+	Write-Host "`nUpdating youtube-dl and ffmpeg files . . ." -ForegroundColor "Yellow"
+	DownloadYoutube-dl
+	DownloadFfmpeg
+	Write-Host "`nUpdate completed successfully." -ForegroundColor "Green"
+	Start-Sleep 3
+	mainRun
 }
+
+
+Function UpdateScript {
+	DownloadFile "https://github.com/dr-raypc/dr-downloader/blob/main/bin/drray-version" "$TempFolder\version-file.txt"
+	[Version]$NewestVersion = Get-Content "$TempFolder\version-file.txt" | Select -Index 0
+	Remove-Item -Path "$TempFolder\version-file.txt"
+	
+	If ($NewestVersion -gt $RunningVersion) {
+		Write-Host "`nA new version of Dr. Ray Downloader is available: v$NewestVersion" -ForegroundColor "Yellow"
+		$MenuOption = Read-Host "`nUpdate to this version? [y/n]"
+		
+		If ($MenuOption -like "y" -or $MenuOption -like "yes") {
+			DownloadFile "https://github.com/dr-raypc/dr-downloader/blob/main/v3/dr-downloader-v3.ps1" "$RootFolder\dr-downloader-v3.ps1"
+		}
+			Write-Host "`nUpdate complete. Please restart the script." -ForegroundColor "Green"
+			Start-Sleep 3
+			Exit
+		}
+		Else {
+			Return
+		}
+	}
+	ElseIf ($NewestVersion -eq $RunningVersion) {
+		Write-Host "`nThe running version of PowerShell-Youtube-dl is up-to-date." -ForegroundColor "Green"
+	}
+	Else {
+		Write-Host "`n[ERROR] Script version mismatch. Re-installing the script is recommended." -ForegroundColor "Red" -BackgroundColor "Black"
+		PauseScript
+	}
+}
+
 
 function drrayHelp {
 	Clear-Host
@@ -90,11 +156,22 @@ function drrayExit {
 
 
 function mainRun {
-	#if (!(Test-Path -Path $downloadpath)) {
-	#	New-Item -ItemType Directory -Path "$downloadpath" -Force -ErrorAction SilentlyContinue | Out-Null
-	#}
+	if (!(Test-Path -Path $downloadpath)) {
+		New-Item -ItemType Directory -Path "$downloadpath" -Force -ErrorAction SilentlyContinue | Out-Null
+	}
+	
+	If (!(test-path -path "$binpath\dl.exe")) {
+		Write-Host "`nYouTube-dl not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
+		DownloadYoutube-dl
+	}
+	
+	if (!(test-path -path $tmpfolder)) {
+		New-Item -ItemType Directory -Path $tmpfolder -Force -ErrorAction SilentlyContinue | Out-Null
+	}
+	
+	$ENV:Path += ";$binpath"
+	
 	Do {
-
 	Write-Host ""
 	Write-Host "                             DR. RAY DOWNLOADER v3.0 "
 	Write-Host "                                      _____  "
@@ -102,12 +179,11 @@ function mainRun {
 	Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
 	Write-Host "                               WHATCHA      WANT               "
 	Write-Host " --------------------------------------------------------------------------------"
-	Write-Host "      1.   YOUTUBE VIDEOS"
-	Write-Host "      2.   SOUNDCLOUD"
-	Write-Host "      3.   YOUTUBE 2 MP3"
-	Write-Host "      4.   UPDATE PROGRAM"
-	Write-Host "      5.   HELP"
-	Write-Host "      6.   EXIT"
+	Write-Host "      1.   DOWNLOAD AUDIO"
+	Write-Host "      2.   DOWNLOAD VIDEO"
+	Write-Host "      3.   UPDATE PROGRAM"
+	Write-Host "      4.   HELP"
+	Write-Host "      5.   EXIT"
 	Write-Host " --------------------------------------------------------------------------------"
 	Write-Host ""
 	Write-Host ""
@@ -118,25 +194,22 @@ function mainRun {
 	switch ($input) {
 		
 		1 {
-				youtubeRun
+				audioRun
 			}
 		2 {
-				soundcloudRun
+				videoRun
 			}
 		3 {
-				youtubeMP3Run
-			}
-		4 {
 				drrayUpdate
 			}
-		5 {
+		4 {
 				drrayHelp
 			}
-		6 {
+		5 {
 				drrayExit
 			}
 		}
-	} Until ($input -eq 6)
+	} Until ($input -eq 5)
 }
 mainRun
 
