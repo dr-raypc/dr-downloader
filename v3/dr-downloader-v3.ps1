@@ -12,8 +12,7 @@ Function DownloadFile {
 		[String]$URLToDownload,
 		[String]$SaveLocation
 	)
-	(New-Object System.Net.WebClient).DownloadFile("$URLToDownload", "$TempFolder\download.tmp")
-	Move-Item -Path "$TempFolder\download.tmp" -Destination "$SaveLocation" -Force
+	(New-Object System.Net.WebClient).DownloadFile("$URLToDownload", "$tmpfolder")
 }
 
 
@@ -89,18 +88,21 @@ function drrayUpdate {
 	DownloadFfmpeg
 	Write-Host "`nUpdate completed successfully." -ForegroundColor "Green"
 	Start-Sleep 3
+	Write-Host "`nChecking for Dr. Ray updates . . . " -ForegroundColor "Yellow"
+	UpdateScript
+	Write-Host "`nUpdate completed successfully." -ForegroundColor "Green"
 	mainRun
 }
 
 
 Function UpdateScript {
-	DownloadFile "https://github.com/dr-raypc/dr-downloader/blob/main/bin/drray-version" "$TempFolder\version-file.txt"
-	[Version]$NewestVersion = Get-Content "$TempFolder\version-file.txt" | Select -Index 0
-	Remove-Item -Path "$TempFolder\version-file.txt"
+	DownloadFile "https://github.com/dr-raypc/dr-downloader/blob/main/bin/drray-version" "$tmpfolder\version-file.txt"
+	[Version]$NewestVersion = Get-Content "$tmpfolder\version-file.txt" | Select -Index 0
+	Remove-Item -Path "$tmpfolder\version-file.txt"
 	
 	If ($NewestVersion -gt $RunningVersion) {
 		Write-Host "`nA new version of Dr. Ray Downloader is available: v$NewestVersion" -ForegroundColor "Yellow"
-		$MenuOption = Read-Host "`nUpdate to this version? [y/n]"
+		$MenuOption = Read-Host "`nUpdate to this version? [y/n]" -ForegroundColor "Yellow"
 		
 		If ($MenuOption -like "y" -or $MenuOption -like "yes") {
 			DownloadFile "https://github.com/dr-raypc/dr-downloader/blob/main/v3/dr-downloader-v3.ps1" "$RootFolder\dr-downloader-v3.ps1"
@@ -111,14 +113,13 @@ Function UpdateScript {
 		}
 		Else {
 			Return
-		}
-	}
-	ElseIf ($NewestVersion -eq $RunningVersion) {
+		} 
+		ElseIf ($NewestVersion -eq $RunningVersion) {
 		Write-Host "`nThe running version of PowerShell-Youtube-dl is up-to-date." -ForegroundColor "Green"
 	}
 	Else {
 		Write-Host "`n[ERROR] Script version mismatch. Re-installing the script is recommended." -ForegroundColor "Red" -BackgroundColor "Black"
-		PauseScript
+		Start-Sleep 5
 	}
 }
 
