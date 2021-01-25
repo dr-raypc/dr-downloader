@@ -5,7 +5,7 @@
 $binpath = "C:\Program Files (x86)\Dr. Downloader\bin"
 $downloadlocation = "$($env:USERPROFILE)\Desktop\New Downloads"
 $tmpfolder = "C:\Program Files (x86)\Dr. Downloader\temp"
-
+$RootFolder = "$PSScriptRoot"
 
 Function DownloadFile {
 	Param(
@@ -22,7 +22,7 @@ Function DownloadYoutube-dl {
 }
 
 
-Function DownloadFfmpeg {
+Function DownloadFFmpeg {
 	If (([environment]::Is64BitOperatingSystem) -eq $True) {
 		DownloadFile "http://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-latest-win64-static.zip" "$binpath\ffmpeg_latest.zip"
 	}
@@ -155,9 +155,31 @@ function drrayExit {
 }
 
 
+# ======================================================================================================= #
+# ======================================================================================================= #
+#
+# MAIN
+#
+# ======================================================================================================= #
+
+
 function mainRun {
-	if (!(Test-Path -Path $downloadpath)) {
-		New-Item -ItemType Directory -Path "$downloadpath" -Force -ErrorAction SilentlyContinue | Out-Null
+	[Version]$RunningVersion = '3.0.0'
+	[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+	$ENV:Path += ";$binpath"
+
+	If ($PSVersionTable.PSVersion.Major -lt 5) {
+		Write-Host "[ERROR]: Your PowerShell installation is not version 5.0 or greater.`n        This script requires PowerShell version 5.0 or greater to function.`n        You can download PowerShell version 5.0 at:`n            https://www.microsoft.com/en-us/download/details.aspx?id=50395" -ForegroundColor "Red" -BackgroundColor "Black"
+		Start-Sleep 10
+		End
+	}
+	
+	if (!(Test-Path -Path $downloadlocation)) {
+		New-Item -ItemType Directory -Path $downloadlocation -Force -ErrorAction SilentlyContinue | Out-Null
+	}
+	
+	if (!(test-path -path $tmpfolder)) {
+		New-Item -ItemType Directory -Path $tmpfolder -Force -ErrorAction SilentlyContinue | Out-Null
 	}
 	
 	If (!(test-path -path "$binpath\dl.exe")) {
@@ -165,52 +187,52 @@ function mainRun {
 		DownloadYoutube-dl
 	}
 	
-	if (!(test-path -path $tmpfolder)) {
-		New-Item -ItemType Directory -Path $tmpfolder -Force -ErrorAction SilentlyContinue | Out-Null
+	if (!(test-path -path "$binpath\ffmpeg.exe")) {
+		Write-Host "`nffmpeg dependencies not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
+		DownloadFFmpeg
 	}
-	
-	$ENV:Path += ";$binpath"
-	
-	Do {
-	Write-Host ""
-	Write-Host "                             DR. RAY DOWNLOADER v3.0 "
-	Write-Host "                                      _____  "
-	Write-Host "                                     ( o o ) "
-	Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
-	Write-Host "                               WHATCHA      WANT               "
-	Write-Host " --------------------------------------------------------------------------------"
-	Write-Host "      1.   DOWNLOAD AUDIO"
-	Write-Host "      2.   DOWNLOAD VIDEO"
-	Write-Host "      3.   UPDATE PROGRAM"
-	Write-Host "      4.   HELP"
-	Write-Host "      5.   EXIT"
-	Write-Host " --------------------------------------------------------------------------------"
-	Write-Host ""
-	Write-Host ""
-	$input = Read-Host "     Execute Command: "
-	Write-Host ""
-	Write-Host ""
 
-	switch ($input) {
-		
-		1 {
-				audioRun
-			}
-		2 {
-				videoRun
-			}
-		3 {
-				drrayUpdate
-			}
-		4 {
-				drrayHelp
-			}
-		5 {
-				drrayExit
-			}
+
+	Do {
+		Write-Host ""
+		Write-Host "                             DR. RAY DOWNLOADER v3.0 "
+		Write-Host "                                      _____  "
+		Write-Host "                                     ( o o ) "
+		Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
+		Write-Host "                               WHATCHA      WANT               "
+		Write-Host " --------------------------------------------------------------------------------"
+		Write-Host "      1.   DOWNLOAD AUDIO"
+		Write-Host "      2.   DOWNLOAD VIDEO"
+		Write-Host "      3.   UPDATE PROGRAM"
+		Write-Host "      4.   HELP"
+		Write-Host "      5.   EXIT"
+		Write-Host " --------------------------------------------------------------------------------"
+		Write-Host ""
+		Write-Host ""
+		$input = Read-Host "     Execute Command: "
+		Write-Host ""
+		Write-Host ""
+
+		switch ($input) {
+			1 {
+					audioRun
+				}
+			2 {
+					videoRun
+				}
+			3 {
+					drrayUpdate
+				}
+			4 {
+					drrayHelp
+				}
+			5 {
+					drrayExit
+				}
 		}
 	} Until ($input -eq 5)
 }
+
 mainRun
 
 
