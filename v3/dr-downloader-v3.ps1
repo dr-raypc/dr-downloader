@@ -4,15 +4,17 @@
 
 $binpath = "C:\Program Files (x86)\Dr. Downloader\bin"
 $downloadlocation = "$($env:USERPROFILE)\Desktop\New Downloads"
-$tmpfolder = "C:\Program Files (x86)\Dr. Downloader\temp"
+$tmpfolder = "C:\temp"
 $RootFolder = "$PSScriptRoot"
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+
 
 Function DownloadFile {
 	Param(
-		[String]$URLToDownload,
-		[String]$SaveLocation
+		[String]$url,
+		[String]$dest
 	)
-	(New-Object System.Net.WebClient).DownloadFile("$URLToDownload", "$tmpfolder")
+	(New-Object System.Net.WebClient).DownloadFile("$url", "$dest")
 }
 
 
@@ -96,16 +98,16 @@ function drrayUpdate {
 
 
 Function UpdateScript {
-	DownloadFile "https://github.com/dr-raypc/dr-downloader/blob/main/bin/drray-version" "$tmpfolder\version-file.txt"
+	DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/bin/drray-version" "$tmpfolder\version-file.txt"
 	[Version]$NewestVersion = Get-Content "$tmpfolder\version-file.txt" | Select -Index 0
-	Remove-Item -Path "$tmpfolder\version-file.txt"
+	Remove-Item -Path "$tmpfolder\version-file.txt" -Force
 	
 	If ($NewestVersion -gt $RunningVersion) {
 		Write-Host "`nA new version of Dr. Ray Downloader is available: v$NewestVersion" -ForegroundColor "Yellow"
 		$MenuOption = Read-Host "`nUpdate to this version? [y/n]" -ForegroundColor "Yellow"
 		
 		If ($MenuOption -like "y" -or $MenuOption -like "yes") {
-			DownloadFile "https://github.com/dr-raypc/dr-downloader/blob/main/v3/dr-downloader-v3.ps1" "$RootFolder\dr-downloader-v3.ps1"
+			DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/v3/dr-downloader-v3.ps1" "$RootFolder\dr-downloader-v3.ps1"
 		}
 			Write-Host "`nUpdate complete. Please restart the script." -ForegroundColor "Green"
 			Start-Sleep 3
@@ -166,13 +168,30 @@ function drrayExit {
 
 function mainRun {
 	[Version]$RunningVersion = '3.0.0'
-	[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 	$ENV:Path += ";$binpath"
 
 	If ($PSVersionTable.PSVersion.Major -lt 5) {
 		Write-Host "[ERROR]: Your PowerShell installation is not version 5.0 or greater.`n        This script requires PowerShell version 5.0 or greater to function.`n        You can download PowerShell version 5.0 at:`n            https://www.microsoft.com/en-us/download/details.aspx?id=50395" -ForegroundColor "Red" -BackgroundColor "Black"
 		Start-Sleep 10
 		End
+	}
+	
+	Try {
+		$MSVISREDIST = Get-WmiObject -class win32_product -Filter {Name like "%Microsoft Visual C++ 2010  x86 Redistributable%"} | select Name
+		if ($MSVISREDIST -like "*Microsoft Visual C++ 2010  x86 Redistributable*") {
+		} else {
+			Write-Host "[ERROR]: Microsoft Visual C++ 2010 x86 Redistributable package must be installed. It can be downloaded here:`n
+			https://www.microsoft.com/en-US/download/details.aspx?id=5555" -ForegroundColor "Red"  -BackgroundColor "Black"
+			Write-Host ""
+			$msvisredistdownload = Read-Host "Should we download and install the Microsoft Visual C++ 2010 x86 Redistributable package?"
+			if ($msvisredistdownload -like "y" -or $msvisredistdownload -like "yes") {
+				DownloadFile "https://github.com/dr-raypc/dr-downloader/blob/main/bin/vcredist_x86.exe?raw=true" "$tmpfolder\vcredist_x86.exe"
+				Start-Process "$tmpfolder\vcredist_x86.exe" -Force
+			}
+		}
+	} Catch {
+		Write-Host "[ERROR]: Microsoft Visual C++ 2010 x86 Redistributable package must be installed. It can be downloaded here:" -ForegroundColor "Red"
+		Write-Host "https://www.microsoft.com/en-US/download/details.aspx?id=5555" -ForegroundColor "Red"
 	}
 	
 	if (!(Test-Path -Path $downloadlocation)) {
