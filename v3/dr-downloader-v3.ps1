@@ -7,6 +7,7 @@ $downloadlocation = "$($env:USERPROFILE)\Desktop\New Downloads"
 $tmpfolder = "C:\temp"
 $RootFolder = "$PSScriptRoot"
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+Install-Module -Name 7Zip4PowerShell -Force
 
 
 Function DownloadFile {
@@ -25,15 +26,44 @@ Function DownloadYoutube-dl {
 
 Function DownloadFFmpeg {
 	If (([environment]::Is64BitOperatingSystem) -eq $True) {
-		DownloadFile "http://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-latest-win64-static.zip" "$binpath\ffmpeg_latest.zip"
+		DownloadFile "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.7z" "$binpath\ffmpeg_latest.7z"
 	}
 	Else {
 		DownloadFile "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-latest-win32-static.zip" "$binpath\ffmpeg_latest.zip"
 	}
-	Expand-Archive -Path "$binpath\ffmpeg_latest.zip" -DestinationPath "$binpath"
-	Copy-Item -Path "$binpath\ffmpeg-*-win*-static\bin\*" -Destination "$binpath" -Recurse -Filter "*.exe" -Force -ErrorAction Silent 
-	Remove-Item -Path "$binpath\ffmpeg_latest.zip" -Force
-	Remove-Item -Path "$binpath\ffmpeg-*-win*-static" -Recurse -Force
+	Expand-Archive -Path "$binpath\ffmpeg_latest.7z" -DestinationPath "$binpath"
+	Copy-Item -Path "$binpath\ffmpeg-*-win*-static\bin\*" -Destination "$binpath" -Recurse -Filter "*.exe" -Force -ErrorAction SilentlyContinue
+	Remove-Item -Path "$binpath\ffmpeg_latest.7z" -Force -ErrorAction SilentlyContinue
+	Remove-Item -Path "$binpath\ffmpeg-*-win*-static" -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+
+Function UpdateScript {
+	DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/bin/drray-version" "$tmpfolder\version-file.txt"
+	[Version]$NewestVersion = Get-Content "$tmpfolder\version-file.txt" | Select -Index 0
+	Remove-Item -Path "$tmpfolder\version-file.txt" -Force
+	
+	If ($NewestVersion -gt $RunningVersion) {
+		Write-Host "`nA new version of Dr. Ray Downloader is available: v$NewestVersion" -ForegroundColor "Yellow"
+		$MenuOption = Read-Host "`nUpdate to this version? [y/n]" -ForegroundColor "Yellow"
+		
+		If ($MenuOption -like "y" -or $MenuOption -like "yes") {
+			DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/v3/dr-downloader-v3.ps1" "$RootFolder\dr-downloader-v3.ps1"
+		}
+			Write-Host "`nUpdate complete. Please restart the script." -ForegroundColor "Green"
+			Start-Sleep 3
+			Exit
+		}
+		Else {
+			Return
+		} 
+		ElseIf ($NewestVersion -eq $RunningVersion) {
+		Write-Host "`nThe running version of PowerShell-Youtube-dl is up-to-date." -ForegroundColor "Green"
+	}
+	Else {
+		Write-Host "`n[ERROR] Script version mismatch. Re-installing the script is recommended." -ForegroundColor "Red" -BackgroundColor "Black"
+		Start-Sleep 5
+	}
 }
 
 
@@ -94,35 +124,6 @@ function drrayUpdate {
 	UpdateScript
 	Write-Host "`nUpdate completed successfully." -ForegroundColor "Green"
 	mainRun
-}
-
-
-Function UpdateScript {
-	DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/bin/drray-version" "$tmpfolder\version-file.txt"
-	[Version]$NewestVersion = Get-Content "$tmpfolder\version-file.txt" | Select -Index 0
-	Remove-Item -Path "$tmpfolder\version-file.txt" -Force
-	
-	If ($NewestVersion -gt $RunningVersion) {
-		Write-Host "`nA new version of Dr. Ray Downloader is available: v$NewestVersion" -ForegroundColor "Yellow"
-		$MenuOption = Read-Host "`nUpdate to this version? [y/n]" -ForegroundColor "Yellow"
-		
-		If ($MenuOption -like "y" -or $MenuOption -like "yes") {
-			DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/v3/dr-downloader-v3.ps1" "$RootFolder\dr-downloader-v3.ps1"
-		}
-			Write-Host "`nUpdate complete. Please restart the script." -ForegroundColor "Green"
-			Start-Sleep 3
-			Exit
-		}
-		Else {
-			Return
-		} 
-		ElseIf ($NewestVersion -eq $RunningVersion) {
-		Write-Host "`nThe running version of PowerShell-Youtube-dl is up-to-date." -ForegroundColor "Green"
-	}
-	Else {
-		Write-Host "`n[ERROR] Script version mismatch. Re-installing the script is recommended." -ForegroundColor "Red" -BackgroundColor "Black"
-		Start-Sleep 5
-	}
 }
 
 
