@@ -2,6 +2,12 @@
 ### August 28th, 2020
 ### Script created by Raymond Mayer
 
+if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {  
+  $arguments = "& '" +$myinvocation.mycommand.definition + "'"
+  Start-Process powershell -Verb runAs -ArgumentList $arguments
+  Break
+}
+
 $binpath = "C:\Program Files (x86)\Dr. Downloader\bin"
 $downloadlocation = "$($env:USERPROFILE)\Desktop\New Downloads"
 $tmpfolder = "C:\temp"
