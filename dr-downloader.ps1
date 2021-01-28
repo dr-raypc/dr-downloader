@@ -63,7 +63,7 @@ Function UpdateScript {
 		$MenuOption = Read-Host "`nUpdate to this version? [y/n]" -ForegroundColor "Yellow"
 		
 		If ($MenuOption -like "y" -or $MenuOption -like "yes") {
-			DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/v3/dr-downloader-v3.ps1" "$RootFolder\dr-downloader-v3.ps1"
+			DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/dr-downloader.ps1" "C:\Program Files (x86)\Dr. Downloader\dr-downloader.ps1"
 		}
 			Write-Host "`nUpdate complete. Please restart the script." -ForegroundColor "Green"
 			Start-Sleep 3
@@ -194,7 +194,7 @@ function drrayInstall {
 	try {
 		Copy-Item "$PSScriptRoot\dr-downloader.ps1" -Destination "C:\Program Files (x86)\Dr. Downloader" -Force
 	} catch {
-		DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/v3/dr-downloader-v3.ps1" "C:\Program Files (x86)\Dr. Downloader\dr-downloader.ps1"
+		DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/dr-downloader.ps1" "C:\Program Files (x86)\Dr. Downloader\dr-downloader.ps1"
 	} finally {
 		DownloadFFmpeg
 		DownloadYoutube-dl
