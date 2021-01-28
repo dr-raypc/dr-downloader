@@ -2,17 +2,18 @@
 ### August 28th, 2020
 ### Script created by Raymond Mayer
 
-if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {  
-  $arguments = "& '" +$myinvocation.mycommand.definition + "'"
-  Start-Process powershell -Verb runAs -ArgumentList $arguments
-  Break
-}
+#if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {  
+ # $arguments = "& '" +$myinvocation.mycommand.definition + "'"
+#  Start-Process powershell -Verb runAs -ArgumentList $arguments
+ # Break
+#}
 
 $binpath = "C:\Program Files (x86)\Dr. Downloader\bin"
 $downloadlocation = "$($env:USERPROFILE)\Desktop\New Downloads"
 $tmpfolder = "C:\temp"
 $RootFolder = "$PSScriptRoot"
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Initializing variables . . ." -PercentComplete 25
 
 
 Function DownloadFile {
@@ -32,9 +33,6 @@ Function DownloadYoutube-dl {
 Function DownloadFFmpeg {
 	If (([environment]::Is64BitOperatingSystem) -eq $True) {
 		DownloadFile "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.7z" "$binpath\ffmpeg_latest.7z"
-	}
-	Else {
-		DownloadFile "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-latest-win32-static.zip" "$binpath\ffmpeg_latest.zip"
 	}
 	Expand-Archive -Path "$binpath\ffmpeg_latest.7z" -DestinationPath "$binpath"
 	Copy-Item -Path "$binpath\ffmpeg-*-win*-static\bin\*" -Destination "$binpath" -Recurse -Filter "*.exe" -Force -ErrorAction SilentlyContinue
@@ -75,17 +73,17 @@ Function UpdateScript {
 function audioRun {
 	Clear-Host
 	Write-Host ""
-	Write-Host "                             DR. RAY DOWNLOADER v3.0 "
+	Write-Host "                              DR. RAY DOWNLOADER v3.0 "
 	Write-Host "                                      _____  "
 	Write-Host "                                     ( o o ) "
 	Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
 	Write-Host "                               DR. RAY     AUDIO DOWNLOADER          "
 	Write-Host " --------------------------------------------------------------------------------"
 	Write-Host ""
-	$audioURL = (Read-Host "URL").Trim()
+	$audioURL = (Read-Host "`n   URL").Trim()
 	Write-Host ""
 	Write-Host ""
-	Write-Host "`nDownloading video from: $audioURL`n"
+	Write-Host "`nDownloading audio from: $audioURL`n"
 	$audioDWNLD = "dl -o ""$downloadlocation\%(title)s.%(ext)s"" --format bestaudio -x --audio-format mp3 --audio-quality 0 --ignore-errors --console-title --no-mtime ""$audioURL"""
 	Invoke-Expression "$audioDWNLD"
 }
@@ -94,14 +92,14 @@ function audioRun {
 function  videoRun {
 	Clear-Host
 	Write-Host ""
-	Write-Host "                             DR. RAY DOWNLOADER v3.0 "
+	Write-Host "                              DR. RAY DOWNLOADER v3.0 "
 	Write-Host "                                      _____  "
 	Write-Host "                                     ( o o ) "
 	Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
 	Write-Host "                               DR. RAY     VIDEO DOWNLOAER         "
 	Write-Host " --------------------------------------------------------------------------------"
 	Write-Host ""
-	$videoURL = (Read-Host "URL").Trim()
+	$videoURL = (Read-Host "`n   URL").Trim()
 	Write-Host ""
 	Write-Host ""
 	Write-Host "`nDownloading video from: $videoURL`n"
@@ -113,7 +111,7 @@ function  videoRun {
 function drrayUpdate {
 	Clear-Host
 	Write-Host ""
-	Write-Host "                             DR. RAY DOWNLOADER v3.0 "
+	Write-Host "                              DR. RAY DOWNLOADER v3.0 "
 	Write-Host "                                      _____  "
 	Write-Host "                                     ( o o ) "
 	Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
@@ -135,26 +133,27 @@ function drrayUpdate {
 function drrayHelp {
 	Clear-Host
 	Write-Host ""
-	Write-Host "                             DR. RAY DOWNLOADER v3.0 "
+	Write-Host "                              DR. RAY DOWNLOADER v3.0 "
 	Write-Host "                                      _____  "
 	Write-Host "                                     ( o o ) "
 	Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
 	Write-Host "                               DR. RAY     HELPER          "
 	Write-Host " --------------------------------------------------------------------------------"
 	Write-Host ""
-	Write-Host "   Dr. Ray Downloader (or Dr. Downloader) is a small. lightweight application"
+	Write-Host "   Dr. Ray Downloader (or Dr. Downloader) is a small, lightweight application"
 	Write-Host "     coded in PowerShell that operates the youtube-dl command line. This"
 	Write-Host "       application allows any user to download audio or video from media"
-	Write-Host "        websites such as YouTube, SoundCloud, LiveLeak, etc."
+	Write-Host "              websites such as YouTube, SoundCloud, LiveLeak, etc."
 	Write-Host ""
 	Write-Host "              **When you are done, please exit using the #5 option**"
 	Write-Host ""
 	Write-Host ""
 	Read-Host "               Press any key to return to the main menu     "
+	Clear-Host
 }
 
 function drrayExit {
-	Start-Process -Path "$($env:USERPROFILE)\Desktop\New Downloads"
+	Start-Process "$($env:USERPROFILE)\Desktop\New Downloads"
 	exit 0
 }
 
@@ -168,8 +167,14 @@ function drrayExit {
 
 
 function mainRun {
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 30
 	[Version]$RunningVersion = '3.0.0.0'
 	$ENV:Path += ";$binpath"
+	
+	If (([environment]::Is64BitOperatingSystem) -eq $false) {
+		Write-Host "[ERROR]: Dr. Ray Downloader only supports 64 bit Operating Systems." -ForegroundColor "Red" -BackgroundColor "Black"
+		End
+	}
 
 	If ($PSVersionTable.PSVersion.Major -lt 5) {
 		Write-Host "[ERROR]: Your PowerShell installation is not version 5.0 or greater.`n        This script requires PowerShell version 5.0 or greater to function.`n        You can download PowerShell version 5.0 at:`n            https://www.microsoft.com/en-us/download/details.aspx?id=50395" -ForegroundColor "Red" -BackgroundColor "Black"
@@ -177,14 +182,21 @@ function mainRun {
 		End
 	}
 	
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 40
+	
 	if (-not(Get-InstalledModule 7Zip4PowerShell -ErrorAction SilentlyContinue)) {
 		Set-PSRepository PSGallery -InstallationPolicy Trusted
 		Install-Module -Name 7Zip4PowerShell -Confirm:$false -Force
 	}
 	
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 50
+	
 	Try {
-		$MSVISREDIST = Get-WmiObject -class win32_product -Filter {Name like "%Microsoft Visual C++ 2010  x86 Redistributable%"} | select Name
-		if (-not($MSVISREDIST -contains "*Microsoft Visual C++ 2010  x86 Redistributable*")) {
+		#$MSVISREDIST = Get-WmiObject -class win32_product -Filter {Name like "%Microsoft Visual C++ 2010  x86 Redistributable%"} | select Name
+		$installedsoftware = Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName
+		Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 75
+		if (-not($InstalledSoftware -like "*Microsoft Visual C++ 2010  x86 Redistributable*")) {
+		#if ($MSVISREDIST -like "*Microsoft Visual C++ 2010  x86 Redistributable*") {
 			Write-Host "[ERROR]: Microsoft Visual C++ 2010 x86 Redistributable package must be installed. It can be downloaded here:`n
 			https://www.microsoft.com/en-US/download/details.aspx?id=5555" -ForegroundColor "Red"  -BackgroundColor "Black"
 			Write-Host ""
@@ -199,6 +211,8 @@ function mainRun {
 		Write-Host "[ERROR]: Microsoft Visual C++ 2010 x86 Redistributable package must be installed. It can be downloaded here:" -ForegroundColor "Red"
 		Write-Host "https://www.microsoft.com/en-US/download/details.aspx?id=5555" -ForegroundColor "Red"
 	}
+	
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Loading Dr. Ray Downloader . . ." -PercentComplete 95
 	
 	if (!(Test-Path -Path $downloadlocation)) {
 		New-Item -ItemType Directory -Path $downloadlocation -Force -ErrorAction SilentlyContinue | Out-Null
@@ -218,10 +232,11 @@ function mainRun {
 		DownloadFFmpeg
 	}
 
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Loading Dr. Ray Downloader . . ." -Completed
 
 	Do {
 		Write-Host ""
-		Write-Host "                             DR. RAY DOWNLOADER v3.0 "
+		Write-Host "                              DR. RAY DOWNLOADER v3.0 "
 		Write-Host "                                      _____  "
 		Write-Host "                                     ( o o ) "
 		Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
@@ -235,7 +250,7 @@ function mainRun {
 		Write-Host " --------------------------------------------------------------------------------"
 		Write-Host ""
 		Write-Host ""
-		$input = Read-Host "     Execute Command: "
+		$input = Read-Host "     Execute Command "
 		Write-Host ""
 		Write-Host ""
 
@@ -260,9 +275,3 @@ function mainRun {
 }
 
 mainRun
-
-
-
-
-
-
