@@ -22,6 +22,8 @@ $ENV:Path += ";$binpath"
 $StartFolder = $ENV:APPDATA + "\Microsoft\Windows\Start Menu\Programs\Dr. Downloader"
 
 
+
+
 # ======================================================================================================= #
 # ======================================================================================================= #
 #
@@ -46,10 +48,11 @@ Function DownloadYoutube-dl {
 
 Function DownloadFFmpeg {
 	DownloadFile "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.7z" "$binpath\ffmpeg_latest.7z"
-	Expand-Archive -Path "$binpath\ffmpeg_latest.7z" -DestinationPath "$binpath"
-	Copy-Item -Path "$binpath\ffmpeg-*-win*-static\bin\*" -Destination "$binpath" -Recurse -Filter "*.exe" -Force -ErrorAction SilentlyContinue
+#	Expand-Archive -Path "$binpath\ffmpeg_latest.7z" -DestinationPath "$binpath"
+	Expand-7Zip -ArchiveFileName "$binpath\ffmpeg_latest.7z" -TargetPath "$binpath"
+	Copy-Item -Path "$binpath\ffmpeg-*\bin\*" -Destination "$binpath" -Recurse -Filter "*.exe" -Force -ErrorAction SilentlyContinue
 	Remove-Item -Path "$binpath\ffmpeg_latest.7z" -Force -ErrorAction SilentlyContinue
-	Remove-Item -Path "$binpath\ffmpeg-*-win*-static" -Recurse -Force -ErrorAction SilentlyContinue
+	Remove-Item -Path "$binpath\ffmpeg-*" -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 
@@ -175,27 +178,39 @@ function drrayExit {
 
 function drrayInstallCheck {
 	if (!(Test-path -Path "C:\Program Files (x86)\Dr. Downloader")) {
+		Write-Host ""
 		Write-Host "[ERROR]: Dr. Ray Downloader is not installed. Would you like to install it?" -ForegroundColor "Red" -BackgroundColor "Black"
+		Write-Host ""
 		$installdrray = (Read-Host "Y/N")
 		if ($installdrray -like "y" -or $installdrray -like "yes") {
 			drrayInstall
 		} else {
-			Write-Host "[ERROR]: Missing dependencies. Please install Dr. Ray Downloader" -ForegroundColor "Red" -BackgroundColor "Black"
-			end
+			Write-Host ""
+			Write-Host "[ERROR]: Missing dependencies. Please install Dr. Ray Downloader to continue." -ForegroundColor "Red" -BackgroundColor "Black"
+			Write-Host ""
+			exit 1
 		}
 	}
 }
 
 
 function drrayInstall {
-	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Downloader" -Force | out-null
-	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Downloader\bin" -Force | out-null
-	New-Item -Type Directory -Path "$StartFolder" | Out-Null
-	try {
+	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 40
+	Write-Host ""
+	Write-Host "Installing Dr. Ray Downloader . . ." -ForegroundColor "Yellow"
+	Write-Host ""
+	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Downloader" -Force -ErrorAction SilentlyContinue | out-null
+	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 75
+	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Downloader\bin" -Force -ErrorAction SilentlyContinue | out-null
+	New-Item -ItemType Directory -Path "$StartFolder" -Force -ErrorAction SilentlyContinue | Out-Null
+	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 95
+	Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Dr. Downloader" -Force
+	
+	TRY {
 		Copy-Item "$PSScriptRoot\dr-downloader.ps1" -Destination "C:\Program Files (x86)\Dr. Downloader" -Force
-	} catch {
+	} CATCH {
 		DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/dr-downloader.ps1" "C:\Program Files (x86)\Dr. Downloader\dr-downloader.ps1"
-	} finally {
+	} FINALLY {
 		DownloadFFmpeg
 		DownloadYoutube-dl
 	}
@@ -218,6 +233,10 @@ function mainRun {
 #  	Break
 #	}
 
+	if (!(test-path -path "C:\Program Files (x86)\Dr. Downloader")) {
+		drrayInstallCheck
+	}
+
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 30
 	
 	If (([environment]::Is64BitOperatingSystem) -eq $false) {
@@ -231,9 +250,6 @@ function mainRun {
 		End
 	}
 	
-	if (!(test-path -path "C:\Program Files (x86)\Dr. Downloader")) {
-		drrayInstallCheck
-	}
 	
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 40
 	
@@ -278,12 +294,10 @@ function mainRun {
 	
 	If (!(test-path -path "$binpath\dl.exe")) {
 		Write-Host "`nYouTube-dl not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
-		
 	}
 	
 	if (!(test-path -path "$binpath\ffmpeg.exe")) {
 		Write-Host "`nffmpeg dependencies not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
-		
 	}
 
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Loading Dr. Ray Downloader . . ." -Completed
