@@ -177,7 +177,7 @@ function drrayInstallCheck {
 	if (!(Test-path -Path "C:\Program Files (x86)\Dr. Downloader")) {
 		Write-Host "[ERROR]: Dr. Ray Downloader is not installed. Would you like to install it?" -ForegroundColor "Red" -BackgroundColor "Black"
 		$installdrray = (Read-Host "Y/N")
-		if ($installdrray -like "y" or $installdrray -like "yes") {
+		if ($installdrray -like "y" -or $installdrray -like "yes") {
 			drrayInstall
 		} else {
 			Write-Host "[ERROR]: Missing dependencies. Please install Dr. Ray Downloader" -ForegroundColor "Red" -BackgroundColor "Black"
@@ -217,6 +217,7 @@ function mainRun {
 #  	Start-Process powershell -Verb runAs -ArgumentList $arguments
 #  	Break
 #	}
+
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 30
 	
 	If (([environment]::Is64BitOperatingSystem) -eq $false) {
@@ -228,6 +229,10 @@ function mainRun {
 		Write-Host "[ERROR]: Your PowerShell installation is not version 5.0 or greater.`n        This script requires PowerShell version 5.0 or greater to function.`n        You can download PowerShell version 5.0 at:`n            https://www.microsoft.com/en-us/download/details.aspx?id=50395" -ForegroundColor "Red" -BackgroundColor "Black"
 		Start-Sleep 10
 		End
+	}
+	
+	if (!(test-path -path "C:\Program Files (x86)\Dr. Downloader")) {
+		drrayInstallCheck
 	}
 	
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 40
@@ -261,6 +266,7 @@ function mainRun {
 	}
 	
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Loading Dr. Ray Downloader . . ." -PercentComplete 95
+		
 	
 	if (!(Test-Path -Path $downloadlocation)) {
 		New-Item -ItemType Directory -Path $downloadlocation -Force -ErrorAction SilentlyContinue | Out-Null
@@ -272,12 +278,12 @@ function mainRun {
 	
 	If (!(test-path -path "$binpath\dl.exe")) {
 		Write-Host "`nYouTube-dl not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
-		DownloadYoutube-dl
+		
 	}
 	
 	if (!(test-path -path "$binpath\ffmpeg.exe")) {
 		Write-Host "`nffmpeg dependencies not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
-		DownloadFFmpeg
+		
 	}
 
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Loading Dr. Ray Downloader . . ." -Completed
