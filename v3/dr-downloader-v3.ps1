@@ -1,19 +1,33 @@
 ### Dr. Downloader v3.0
-### August 28th, 2020
+### January 28th, 2021
 ### Script created by Raymond Mayer
 
-#if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {  
- # $arguments = "& '" +$myinvocation.mycommand.definition + "'"
-#  Start-Process powershell -Verb runAs -ArgumentList $arguments
- # Break
-#}
 
+# ======================================================================================================= #
+# ======================================================================================================= #
+#
+# VARIABLES
+#
+# ======================================================================================================= #
+
+
+Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Initializing variables . . ." -PercentComplete 25
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+[Version]$RunningVersion = '3.0.0.0'
 $binpath = "C:\Program Files (x86)\Dr. Downloader\bin"
 $downloadlocation = "$($env:USERPROFILE)\Desktop\New Downloads"
 $tmpfolder = "C:\temp"
 $RootFolder = "$PSScriptRoot"
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Initializing variables . . ." -PercentComplete 25
+$ENV:Path += ";$binpath"
+$StartFolder = $ENV:APPDATA + "\Microsoft\Windows\Start Menu\Programs\Dr. Downloader"
+
+
+# ======================================================================================================= #
+# ======================================================================================================= #
+#
+# FUNCTIONS
+#
+# ======================================================================================================= #
 
 
 Function DownloadFile {
@@ -31,9 +45,7 @@ Function DownloadYoutube-dl {
 
 
 Function DownloadFFmpeg {
-	If (([environment]::Is64BitOperatingSystem) -eq $True) {
-		DownloadFile "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.7z" "$binpath\ffmpeg_latest.7z"
-	}
+	DownloadFile "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.7z" "$binpath\ffmpeg_latest.7z"
 	Expand-Archive -Path "$binpath\ffmpeg_latest.7z" -DestinationPath "$binpath"
 	Copy-Item -Path "$binpath\ffmpeg-*-win*-static\bin\*" -Destination "$binpath" -Recurse -Filter "*.exe" -Force -ErrorAction SilentlyContinue
 	Remove-Item -Path "$binpath\ffmpeg_latest.7z" -Force -ErrorAction SilentlyContinue
@@ -86,6 +98,7 @@ function audioRun {
 	Write-Host "`nDownloading audio from: $audioURL`n"
 	$audioDWNLD = "dl -o ""$downloadlocation\%(title)s.%(ext)s"" --format bestaudio -x --audio-format mp3 --audio-quality 0 --ignore-errors --console-title --no-mtime ""$audioURL"""
 	Invoke-Expression "$audioDWNLD"
+	Write-Host ""
 }
 
 
@@ -105,6 +118,7 @@ function  videoRun {
 	Write-Host "`nDownloading video from: $videoURL`n"
 	$videoDWNLD = "dl -o ""$downloadlocation\%(title)s.%(ext)s"" --ignore-errors --console-title --no-mtime ""$videoURL"""
 	Invoke-Expression "$videoDWNLD"
+	Write-Host ""
 }
 
 
@@ -152,24 +166,58 @@ function drrayHelp {
 	Clear-Host
 }
 
+
 function drrayExit {
-	Start-Process "$($env:USERPROFILE)\Desktop\New Downloads"
+	Start-Process $downloadlocation
 	exit 0
+}
+
+
+function drrayInstallCheck {
+	if (!(Test-path -Path "C:\Program Files (x86)\Dr. Downloader")) {
+		Write-Host "[ERROR]: Dr. Ray Downloader is not installed. Would you like to install it?" -ForegroundColor "Red" -BackgroundColor "Black"
+		$installdrray = (Read-Host "Y/N")
+		if ($installdrray -like "y" or $installdrray -like "yes") {
+			drrayInstall
+		} else {
+			Write-Host "[ERROR]: Missing dependencies. Please install Dr. Ray Downloader" -ForegroundColor "Red" -BackgroundColor "Black"
+			end
+		}
+	}
+}
+
+
+function drrayInstall {
+	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Downloader" -Force | out-null
+	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Downloader\bin" -Force | out-null
+	New-Item -Type Directory -Path "$StartFolder" | Out-Null
+	try {
+		Copy-Item "$PSScriptRoot\dr-downloader.ps1" -Destination "C:\Program Files (x86)\Dr. Downloader" -Force
+	} catch {
+		DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/v3/dr-downloader-v3.ps1" "C:\Program Files (x86)\Dr. Downloader\dr-downloader.ps1"
+	} finally {
+		DownloadFFmpeg
+		DownloadYoutube-dl
+	}
 }
 
 
 # ======================================================================================================= #
 # ======================================================================================================= #
 #
-# MAIN
+# MAIN FUNCTION
 #
 # ======================================================================================================= #
 
 
 function mainRun {
+	
+#	if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {  
+# 		 $arguments = "& '" +$myinvocation.mycommand.definition + "'"
+#  	Start-Process powershell -Verb runAs -ArgumentList $arguments
+#  	Break
+#	}
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 30
-	[Version]$RunningVersion = '3.0.0.0'
-	$ENV:Path += ";$binpath"
 	
 	If (([environment]::Is64BitOperatingSystem) -eq $false) {
 		Write-Host "[ERROR]: Dr. Ray Downloader only supports 64 bit Operating Systems." -ForegroundColor "Red" -BackgroundColor "Black"
