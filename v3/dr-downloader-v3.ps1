@@ -7,7 +7,6 @@ $downloadlocation = "$($env:USERPROFILE)\Desktop\New Downloads"
 $tmpfolder = "C:\temp"
 $RootFolder = "$PSScriptRoot"
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-Install-Module -Name 7Zip4PowerShell -Force
 
 
 Function DownloadFile {
@@ -137,20 +136,15 @@ function drrayHelp {
 	Write-Host "                               DR. RAY     HELPER          "
 	Write-Host " --------------------------------------------------------------------------------"
 	Write-Host ""
-	Write-Host "   This small application will download the original file uploaded to SoundCloud"
-	Write-Host "      or YouTube. Paste link by right clicking in the box. You may use any"
-	Write-Host "          option, but the YTDWNLD option will download the best vid/aud"
-	Write-Host "              that is available. If you are downloading a simple MP3"
-	Write-Host "                    please use the SNDCLD option. When it says"
-	Write-Host "                        DLNK you may type M at anytime to go"
-	Write-Host "                             back to the MAIN menu. TY"
+	Write-Host "   Dr. Ray Downloader (or Dr. Downloader) is a small. lightweight application"
+	Write-Host "     coded in PowerShell that operates the youtube-dl command line. This"
+	Write-Host "       application allows any user to download audio or video from media"
+	Write-Host "        websites such as YouTube, SoundCloud, LiveLeak, etc."
 	Write-Host ""
-	Write-Host ""
-	Write-Host "              **When you are done please exit using the #6 option**"
+	Write-Host "              **When you are done, please exit using the #5 option**"
 	Write-Host ""
 	Write-Host ""
 	Read-Host "               Press any key to return to the main menu     "
-	
 }
 
 function drrayExit {
@@ -168,7 +162,7 @@ function drrayExit {
 
 
 function mainRun {
-	[Version]$RunningVersion = '3.0.0'
+	[Version]$RunningVersion = '3.0.0.0'
 	$ENV:Path += ";$binpath"
 
 	If ($PSVersionTable.PSVersion.Major -lt 5) {
@@ -177,10 +171,14 @@ function mainRun {
 		End
 	}
 	
+	if (-not(Get-InstalledModule 7Zip4PowerShell -ErrorAction SilentlyContinue)) {
+		Set-PSRepository PSGallery -InstallationPolicy Trusted
+		Install-Module -Name 7Zip4PowerShell -Confirm:$false -Force
+	}
+	
 	Try {
 		$MSVISREDIST = Get-WmiObject -class win32_product -Filter {Name like "%Microsoft Visual C++ 2010  x86 Redistributable%"} | select Name
-		if ($MSVISREDIST -like "*Microsoft Visual C++ 2010  x86 Redistributable*") {
-		} else {
+		if (-not($MSVISREDIST -contains "*Microsoft Visual C++ 2010  x86 Redistributable*")) {
 			Write-Host "[ERROR]: Microsoft Visual C++ 2010 x86 Redistributable package must be installed. It can be downloaded here:`n
 			https://www.microsoft.com/en-US/download/details.aspx?id=5555" -ForegroundColor "Red"  -BackgroundColor "Black"
 			Write-Host ""
@@ -188,6 +186,7 @@ function mainRun {
 			if ($msvisredistdownload -like "y" -or $msvisredistdownload -like "yes") {
 				DownloadFile "https://github.com/dr-raypc/dr-downloader/blob/main/bin/vcredist_x86.exe?raw=true" "$tmpfolder\vcredist_x86.exe"
 				Start-Process "$tmpfolder\vcredist_x86.exe" -Force
+				exit
 			}
 		}
 	} Catch {
