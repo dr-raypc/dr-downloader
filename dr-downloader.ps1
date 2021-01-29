@@ -306,10 +306,12 @@ function mainRun {
 	
 	If (!(test-path -path "$binpath\dl.exe")) {
 		Write-Host "`nYouTube-dl not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
+		DownloadYoutube-dl
 	}
 	
 	if (!(test-path -path "$binpath\ffmpeg.exe")) {
 		Write-Host "`nffmpeg dependencies not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
+		DownloadFFmpeg
 	}
 
 	Set-Location -Path "C:\Program Files (x86)\Dr. Downloader" -ErrorAction SilentlyContinue
