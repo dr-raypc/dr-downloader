@@ -245,7 +245,7 @@ function mainRun {
 
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 20
 
-	if (!(test-path -path "C:\Program Files (x86)\Dr. Downloader")) {
+	if (!(test-path -path "C:\Program Files (x86)\Dr. Downloader\*")) {
 		drrayInstallCheck
 	}
 	
