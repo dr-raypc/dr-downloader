@@ -4,8 +4,8 @@ Dr. Ray Downloader (or Dr. Downloader) is a small, lightweight application coded
 
 # Main Menu
 
-1. Select option 1 to download an audio file from websites like SoundCloud and convert it to a MP3 file.
-2. Select option 2 to download Youtube video's and convert them to a MP3 file using the best method available.
+1. Select option 1 to download an audio file from websites like SoundCloud and YouTube.
+2. Select option 2 to download a video file from websites like YouTube, LiveLeak, etc.
 3. Select option 3 to update the Dr. Ray Downloader application.
 5. Select option 4 to show the Dr. Ray Downloader's help menu.
 6. Select option 5 to open the New Downloads folder and exit the application.
