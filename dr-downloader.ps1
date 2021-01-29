@@ -172,6 +172,9 @@ function audioRun {
 	Write-Host " --------------------------------------------------------------------------------"
 	Write-Host ""
 	$audioURL = (Read-Host "`n   URL").Trim()
+	if ($audioURL -eq "M" -or $audioURL -eq "m") {
+		mainRun
+	}
 	Write-Host ""
 	Write-Host ""
 	Write-Host "`nDownloading audio from: $audioURL`n"
@@ -191,6 +194,9 @@ function  videoRun {
 	Write-Host " --------------------------------------------------------------------------------"
 	Write-Host ""
 	$videoURL = (Read-Host "`n   URL").Trim()
+	if ($videoURL -eq "M" -or $videoURL -eq "m") {
+		mainRun
+	}
 	Write-Host ""
 	Write-Host ""
 	Write-Host "`nDownloading video from: $videoURL`n"
