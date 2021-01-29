@@ -11,11 +11,11 @@
 # ======================================================================================================= #
 
 
-Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Initializing variables . . ." -PercentComplete 25
+Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Initializing variables . . ." -PercentComplete 10
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 [Version]$RunningVersion = '3.0.0.0'
 $binpath = "C:\Program Files (x86)\Dr. Downloader\bin"
-$downloadlocation = "$($env:USERPROFILE)\Desktop\New Downloads"
+$downloadlocation = "C:\ProgramData\Dr. Downloader\Dr. Downloads"
 $tmpfolder = "C:\temp"
 $RootFolder = "$PSScriptRoot"
 $ENV:Path += ";$binpath"
@@ -136,10 +136,17 @@ function drrayInstall {
 	Write-Host ""
 	Write-Host "Installing Dr. Ray Downloader . . ." -ForegroundColor "Yellow"
 	Write-Host ""
+	New-Item -ItemType Directory -Path "C:\ProgramData\Dr. Downloader" -Force -ErrorAction SilentlyContinue | out-null
+	New-Item -ItemType Directory -Path "C:\ProgramData\Dr. Downloader\Dr. Downloads" -Force -ErrorAction SilentlyContinue | out-null
+	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 50
 	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Downloader" -Force -ErrorAction SilentlyContinue | out-null
-	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 60
 	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Downloader\bin" -Force -ErrorAction SilentlyContinue | out-null
 	New-Item -ItemType Directory -Path "$StartFolder" -Force -ErrorAction SilentlyContinue | Out-Null
+	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 60
+	$WshShell = New-Object -comObject WScript.Shell
+	$Shortcut = $WshShell.CreateShortcut("$home\Desktop\Dr. Downloads.lnk")
+	$shortcut.TargetPath = "C:\ProgramData\Dr. Downloader\Dr. Downloads"
+	$shortcut.save()
 	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 80
 	Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Dr. Downloader" -Force
 	
@@ -236,7 +243,7 @@ function mainRun {
 #  	Break
 #	}
 
-	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 30
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 20
 
 	if (!(test-path -path "C:\Program Files (x86)\Dr. Downloader")) {
 		drrayInstallCheck
@@ -253,14 +260,14 @@ function mainRun {
 		End
 	}
 	
-	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 40
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 30
 	
 	if (-not(Get-InstalledModule 7Zip4PowerShell -ErrorAction SilentlyContinue)) {
 		Set-PSRepository PSGallery -InstallationPolicy Trusted
 		Install-Module -Name 7Zip4PowerShell -Confirm:$false -Force
 	}
 	
-	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 65
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 55
 	
 	Try {
 		$installedsoftware = Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName
@@ -281,8 +288,7 @@ function mainRun {
 		Write-Host "https://www.microsoft.com/en-US/download/details.aspx?id=5555" -ForegroundColor "Red"
 	}
 	
-	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Loading Dr. Ray Downloader . . ." -PercentComplete 95
-		
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Loading Dr. Ray Downloader . . ." -PercentComplete 90
 	
 	if (!(Test-Path -Path $downloadlocation)) {
 		New-Item -ItemType Directory -Path $downloadlocation -Force -ErrorAction SilentlyContinue | Out-Null
