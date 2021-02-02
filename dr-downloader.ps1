@@ -15,7 +15,7 @@ Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Initializing var
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 [Version]$RunningVersion = '3.0.0.0'
 $binpath = "C:\Program Files (x86)\Dr. Downloader\bin"
-$downloadlocation = "C:\ProgramData\Dr. Downloader\Dr. Downloads"
+$downloadlocation = "$home\Desktop\Dr. Downloads"
 $tmpfolder = "C:\temp"
 $RootFolder = "$PSScriptRoot"
 $ENV:Path += ";$binpath"
@@ -233,91 +233,7 @@ function drrayExit {
 }
 
 
-# ======================================================================================================= #
-# ======================================================================================================= #
-#
-# MAIN FUNCTION
-#
-# ======================================================================================================= #
-
-
-function mainRun {
-	
-#	if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {  
-# 		 $arguments = "& '" +$myinvocation.mycommand.definition + "'"
-#  	Start-Process powershell -Verb runAs -ArgumentList $arguments
-#  	Break
-#	}
-
-	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 20
-
-	if (!(test-path -path "C:\Program Files (x86)\Dr. Downloader\*")) {
-		drrayInstallCheck
-	}
-	
-	If (([environment]::Is64BitOperatingSystem) -eq $false) {
-		Write-Host "[ERROR]: Dr. Ray Downloader only supports 64 bit Operating Systems." -ForegroundColor "Red" -BackgroundColor "Black"
-		End
-	}
-
-	If ($PSVersionTable.PSVersion.Major -lt 5) {
-		Write-Host "[ERROR]: Your PowerShell installation is not version 5.0 or greater.`n        This script requires PowerShell version 5.0 or greater to function.`n        You can download PowerShell version 5.0 at:`n            https://www.microsoft.com/en-us/download/details.aspx?id=50395" -ForegroundColor "Red" -BackgroundColor "Black"
-		Start-Sleep 10
-		End
-	}
-	
-	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 30
-	
-	if (-not(Get-InstalledModule 7Zip4PowerShell -ErrorAction SilentlyContinue)) {
-		Set-PSRepository PSGallery -InstallationPolicy Trusted
-		Install-Module -Name 7Zip4PowerShell -Confirm:$false -Force
-	}
-	
-	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 55
-	
-	Try {
-		$installedsoftware = Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName
-		Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 75
-		if (-not($InstalledSoftware -like "*Microsoft Visual C++ 2010  x86 Redistributable*")) {
-			Write-Host "[ERROR]: Microsoft Visual C++ 2010 x86 Redistributable package must be installed. It can be downloaded here:`n
-			https://www.microsoft.com/en-US/download/details.aspx?id=5555" -ForegroundColor "Red"  -BackgroundColor "Black"
-			Write-Host ""
-			$msvisredistdownload = Read-Host "Should we download and install the Microsoft Visual C++ 2010 x86 Redistributable package?"
-			if ($msvisredistdownload -like "y" -or $msvisredistdownload -like "yes") {
-				DownloadFile "https://github.com/dr-raypc/dr-downloader/blob/main/bin/vcredist_x86.exe?raw=true" "$tmpfolder\vcredist_x86.exe"
-				Start-Process "$tmpfolder\vcredist_x86.exe" -Force
-				exit 0
-			}
-		}
-	} Catch {
-		Write-Host "[ERROR]: Microsoft Visual C++ 2010 x86 Redistributable package must be installed. It can be downloaded here:" -ForegroundColor "Red"
-		Write-Host "https://www.microsoft.com/en-US/download/details.aspx?id=5555" -ForegroundColor "Red"
-	}
-	
-	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Loading Dr. Ray Downloader . . ." -PercentComplete 90
-	
-	if (!(Test-Path -Path $downloadlocation)) {
-		New-Item -ItemType Directory -Path $downloadlocation -Force -ErrorAction SilentlyContinue | Out-Null
-	}
-	
-	if (!(test-path -path $tmpfolder)) {
-		New-Item -ItemType Directory -Path $tmpfolder -Force -ErrorAction SilentlyContinue | Out-Null
-	}
-	
-	If (!(test-path -path "$binpath\dl.exe")) {
-		Write-Host "`nYouTube-dl not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
-		DownloadYoutube-dl
-	}
-	
-	if (!(test-path -path "$binpath\ffmpeg.exe")) {
-		Write-Host "`nffmpeg dependencies not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
-		DownloadFFmpeg
-	}
-
-	Set-Location -Path "C:\Program Files (x86)\Dr. Downloader" -ErrorAction SilentlyContinue
-
-	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Loading Dr. Ray Downloader . . ." -Completed
-
+function drrayMenu {
 	Do {
 		Write-Host ""
 		Write-Host "                              DR. RAY DOWNLOADER v3.0 "
@@ -358,4 +274,76 @@ function mainRun {
 	} Until ($input -eq 5)
 }
 
-mainRun
+
+# ======================================================================================================= #
+# ======================================================================================================= #
+#
+# INITIALIZING
+#
+# ======================================================================================================= #
+
+function main_init {
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 5
+	If (([environment]::Is64BitOperatingSystem) -eq $false) {
+		Write-Host "[ERROR]: Dr. Ray Downloader only supports 64 bit Operating Systems." -ForegroundColor "Red" -BackgroundColor "Black"
+		exit 1
+	}
+	If ($PSVersionTable.PSVersion.Major -lt 5) {
+		Write-Host "[ERROR]: Your PowerShell installation is not version 5.0 or greater.`n        This script requires PowerShell version 5.0 or greater to function.`n        You can download PowerShell version 5.0 at:`n            https://www.microsoft.com/en-us/download/details.aspx?id=50395" -ForegroundColor "Red" -BackgroundColor "Black"
+		Start-Sleep 10
+		exit 1
+	}
+	if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {  
+ 		 $arguments = "& '" +$myinvocation.mycommand.definition + "'"
+  	Start-Process powershell -Verb runAs -ArgumentList $arguments
+  	Break
+	}
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 20
+	if (!(test-path -path "C:\Program Files (x86)\Dr. Downloader\*")) {
+		drrayInstallCheck
+	}
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 30
+	if (-not(Get-InstalledModule 7Zip4PowerShell -ErrorAction SilentlyContinue)) {
+		Set-PSRepository PSGallery -InstallationPolicy Trusted
+		Install-Module -Name 7Zip4PowerShell -Confirm:$false -Force
+	}
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 55
+	Try {
+		$installedsoftware = Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName
+		Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 75
+		if (-not($InstalledSoftware -like "*Microsoft Visual C++ 2010  x86 Redistributable*")) {
+			Write-Host "[ERROR]: Microsoft Visual C++ 2010 x86 Redistributable package must be installed. It can be downloaded here:`n
+			https://www.microsoft.com/en-US/download/details.aspx?id=5555" -ForegroundColor "Red"  -BackgroundColor "Black"
+			Write-Host ""
+			$msvisredistdownload = Read-Host "Should we download and install the Microsoft Visual C++ 2010 x86 Redistributable package?"
+			if ($msvisredistdownload -like "y" -or $msvisredistdownload -like "yes") {
+				DownloadFile "https://github.com/dr-raypc/dr-downloader/blob/main/bin/vcredist_x86.exe?raw=true" "$tmpfolder\vcredist_x86.exe"
+				Start-Process "$tmpfolder\vcredist_x86.exe" -Force
+				exit 0
+			}
+		}
+	} Catch {
+		Write-Host "[ERROR]: Microsoft Visual C++ 2010 x86 Redistributable package must be installed. It can be downloaded here:" -ForegroundColor "Red"
+		Write-Host "https://www.microsoft.com/en-US/download/details.aspx?id=5555" -ForegroundColor "Red"
+	}
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Loading Dr. Ray Downloader . . ." -PercentComplete 90
+	if (!(Test-Path -Path $downloadlocation)) {
+		New-Item -ItemType Directory -Path $downloadlocation -Force -ErrorAction SilentlyContinue | Out-Null
+	}
+	if (!(test-path -path $tmpfolder)) {
+		New-Item -ItemType Directory -Path $tmpfolder -Force -ErrorAction SilentlyContinue | Out-Null
+	}
+	If (!(test-path -path "$binpath\dl.exe")) {
+		Write-Host "`nYouTube-dl not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
+		DownloadYoutube-dl
+	}
+	if (!(test-path -path "$binpath\ffmpeg.exe")) {
+		Write-Host "`nffmpeg dependencies not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
+		DownloadFFmpeg
+	}
+	Set-Location -Path "C:\Program Files (x86)\Dr. Downloader" -ErrorAction SilentlyContinue
+	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Loading Dr. Ray Downloader . . ." -Completed
+	drrayMenu
+}
+
+main_init
