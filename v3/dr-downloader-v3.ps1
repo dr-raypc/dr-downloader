@@ -132,26 +132,30 @@ function drrayInstallCheck {
 
 
 function drrayInstall {
-	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 40
+	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 15
 	Write-Host ""
 	Write-Host "Installing Dr. Ray Downloader . . ." -ForegroundColor "Yellow"
 	Write-Host ""
 	New-Item -ItemType Directory -Path "C:\ProgramData\Dr. Downloader" -Force -ErrorAction SilentlyContinue | out-null
 	New-Item -ItemType Directory -Path "C:\ProgramData\Dr. Downloader\Dr. Downloads" -Force -ErrorAction SilentlyContinue | out-null
-	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 50
+	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 40
 	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Downloader" -Force -ErrorAction SilentlyContinue | out-null
 	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Downloader\bin" -Force -ErrorAction SilentlyContinue | out-null
 	New-Item -ItemType Directory -Path "$StartFolder" -Force -ErrorAction SilentlyContinue | Out-Null
-	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 60
+	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 65
 	$WshShell = New-Object -comObject WScript.Shell
-	$Shortcut = $WshShell.CreateShortcut("$home\Desktop\Dr. Downloads.lnk")
+	$Shortcut = $WshShell.CreateShortcut("C:\Users\Public\Desktop\Dr. Downloads.lnk")
 	$shortcut.TargetPath = "C:\ProgramData\Dr. Downloader\Dr. Downloads"
 	$shortcut.save()
-	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 80
+	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 90
 	Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Dr. Downloader" -Force
 	
 	TRY {
 		Copy-Item "$PSScriptRoot\dr-downloader-v3.ps1" -Destination "C:\Program Files (x86)\Dr. Downloader" -Force
+		$WshShell = New-Object -comObject WScript.Shell
+		$Shortcut = $WshShell.CreateShortcut("C:\Users\Public\Desktop\Dr. Downloader.lnk")
+		$shortcut.TargetPath = "C:\Program Files (x86)\Dr. Downloader\dr-downloader.ps1"
+		$shortcut.save()
 	} CATCH {
 		DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/dr-downloader.ps1" "C:\Program Files (x86)\Dr. Downloader\dr-downloader.ps1"
 	} FINALLY {
@@ -220,7 +224,7 @@ function drrayHelp {
 	Write-Host "       application allows any user to download audio or video from media"
 	Write-Host "              websites such as YouTube, SoundCloud, LiveLeak, etc."
 	Write-Host ""
-	Write-Host "              **When you are done, please exit using the #5 option**"
+	Write-Host "              ** When you are done, please exit using the #5 option ** "
 	Write-Host ""
 	Write-Host ""
 	Read-Host "               Press enter to return to the main menu  "
