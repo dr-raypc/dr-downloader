@@ -151,7 +151,7 @@ function drrayInstall {
 	Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Dr. Downloader" -Force
 	
 	TRY {
-		Copy-Item "$PSScriptRoot\dr-downloader.ps1" -Destination "C:\Program Files (x86)\Dr. Downloader" -Force
+		Copy-Item "$PSScriptRoot\dr-downloader-v3.ps1" -Destination "C:\Program Files (x86)\Dr. Downloader" -Force
 	} CATCH {
 		DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/dr-downloader.ps1" "C:\Program Files (x86)\Dr. Downloader\dr-downloader.ps1"
 	} FINALLY {
