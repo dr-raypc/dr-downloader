@@ -324,6 +324,7 @@ function mainRun {
 
 	Do {
 		Write-Host ""
+		Write-Host ""
 		Write-Host "                              DR. RAY DOWNLOADER v3.0 "
 		Write-Host "                                      _____  "
 		Write-Host "                                     ( o o ) "
