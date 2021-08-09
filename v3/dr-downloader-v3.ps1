@@ -20,7 +20,7 @@ $downloadlocation = "$DesktopPath\Dr. Ray Downloads"
 $tmpfolder = "C:\temp"
 $RootFolder = "$PSScriptRoot"
 $ENV:Path += ";$binpath"
-$StartFolder = $ENV:APPDATA + "\Microsoft\Windows\Start Menu\Programs\Dr. Ray Downloader"
+
 
 
 # ======================================================================================================= #
@@ -221,16 +221,62 @@ function drrayHelp {
 	Write-Host "       application allows any user to download audio or video from media"
 	Write-Host "              websites such as YouTube, SoundCloud, LiveLeak, etc."
 	Write-Host ""
-	Write-Host "              ** When you are done, please exit using the #5 option ** "
+	Write-Host "        When you are done, please exit the application using the #5 option"
 	Write-Host ""
 	Write-Host ""
-	Read-Host "               Press enter to return to the main menu  "
+	Write-Host "        Press enter to return to the main menu or type UNINSTALL to"
+	Write-Host "         remove Dr. Ray Downloader from your PC. Uninstalling will"
+	Write-Host "                 not remove downloaded audio/video files."
+	Write-Host ""
+	Write-Host ""
+	$helpPrompt = (Read-Host "`n")
+	if ($helpPrompt -eq "uninstall" -or $helpPrompt -eq "Uninstall") {
+		drrayUninstall
+	} else {
+		mainRun
+	}
 }
 
 
 function drrayExit {
 	Start-Process $downloadlocation
 	exit 0
+}
+
+
+function drrayUninstall {
+	if (Test-Path -Path "C:\Program Files (x86)\Dr. Ray Downloader\*") {
+		Clear-Host
+		Write-Host ""
+		Write-Host "                              DR. RAY DOWNLOADER v3.0 "
+		Write-Host "                                      _____  "
+		Write-Host "                                     ( o o ) "
+		Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
+		Write-Host "                               DR. RAY     UNINSTALLER          "
+		Write-Host " --------------------------------------------------------------------------------"
+		Write-Host ""
+		Write-Host ""
+		Set-Location -Path $DesktopPath -ErrorAction SilentlyContinue
+		Write-Host "`n[+] Removing Start Menu Shortcuts . . ." -ForegroundColor "Yellow"
+		if (test-path -path $StartFolder) {
+			Remove-Item -Path $StartFolder -Force -ErrorAction SilentlyContinue
+		}
+		Write-Host "`n[+] Removing Dr. Ray Downloader Components . . ." -ForegroundColor "Yellow"
+		if (test-path -path "C:\Program Files (x86)\Dr. Ray Downloader\bin") {
+			Remove-Item -Path "C:\Program Files (x86)\Dr. Ray Downloader\bin" -Recurse -Force -ErrorAction SilentlyContinue
+		}
+		Write-Host "`n[+] Removing Dr. Ray Downloader Installation folder . . ." -ForegroundColor "Yellow"
+		if (test-path -path "C:\Program Files (x86)\Dr. Ray Downloader") {
+			Remove-Item -Path "C:\Program Files (x86)\Dr. Ray Downloader" -Recurse -Force -ErrorAction SilentlyContinue
+		}
+		Start-Sleep 5
+		if (!(Test-path -Path "C:\Program Files (x86)\Dr. Ray Downloader")) {
+			Write-Host "`n[x] Successfully uninstalled Dr. Ray Downloader!" -ForegroundColor "Green"
+			Write-Host "`n[x] Dr. Ray Downloader will now exit." -ForegroundColor "Green"
+			Write-Host ""
+			exit 0
+		}
+	}
 }
 
 
