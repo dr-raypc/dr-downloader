@@ -14,12 +14,13 @@
 Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Initializing variables . . ." -PercentComplete 10
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 [Version]$RunningVersion = '3.0.0.0'
-$binpath = "C:\Program Files (x86)\Dr. Downloader\bin"
-$downloadlocation = "C:\ProgramData\Dr. Downloader\Dr. Downloads"
+$binpath = "C:\Program Files (x86)\Dr. Ray Downloader\bin"
+$DesktopPath = [Environment]::GetFolderPath("Desktop")
+$downloadlocation = "$DesktopPath\Dr. Ray Downloads"
 $tmpfolder = "C:\temp"
 $RootFolder = "$PSScriptRoot"
 $ENV:Path += ";$binpath"
-$StartFolder = $ENV:APPDATA + "\Microsoft\Windows\Start Menu\Programs\Dr. Downloader"
+
 
 
 # ======================================================================================================= #
@@ -41,20 +42,17 @@ Function DownloadFile {
 
 Function DownloadYoutube-dl {
 	Write-Host ""
-	Write-Host "Downloading youtube-dl binary . . ." -ForegroundColor "Yellow"
-	Write-Host ""
+	Write-Host "[+] Downloading youtube-dl binary . . ." -ForegroundColor "Yellow"
 	DownloadFile "http://yt-dl.org/downloads/latest/youtube-dl.exe" "$binpath\dl.exe"
 }
 
 
 Function DownloadFFmpeg {
 	Write-Host ""
-	Write-Host "Downloading ffmpeg files . . ." -ForegroundColor "Yellow"
-	Write-Host ""
+	Write-Host "[+] Downloading ffmpeg files . . ." -ForegroundColor "Yellow"
 	DownloadFile "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.7z" "$binpath\ffmpeg_latest.7z"
 	Write-Host ""
-	Write-Host "Expanding ffmpeg 7-Zip archive . . ." -ForegroundColor "Yellow"
-	Write-Host ""
+	Write-Host "[+] Expanding ffmpeg 7-Zip archive . . ." -ForegroundColor "Yellow"
 #	Expand-Archive -Path "$binpath\ffmpeg_latest.7z" -DestinationPath "$binpath"
 	Expand-7Zip -ArchiveFileName "$binpath\ffmpeg_latest.7z" -TargetPath "$binpath"
 	Copy-Item -Path "$binpath\ffmpeg-*\bin\*" -Destination "$binpath" -Recurse -Filter "*.exe" -Force -ErrorAction SilentlyContinue
@@ -73,7 +71,7 @@ Function UpdateScript {
 		$MenuOption = Read-Host "`nUpdate to this version? [y/n]" -ForegroundColor "Yellow"
 		
 		If ($MenuOption -like "y" -or $MenuOption -like "yes") {
-			DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/dr-downloader.ps1" "C:\Program Files (x86)\Dr. Downloader\dr-downloader.ps1"
+			DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/dr-downloader.ps1" "C:\Program Files (x86)\Dr. Ray Downloader\dr-downloader.ps1"
 		}
 			Write-Host "`nUpdate complete. Please restart the script." -ForegroundColor "Green"
 			Start-Sleep 3
@@ -101,20 +99,20 @@ function drrayUpdate {
 	Write-Host "                               DR. RAY     UPDATER          "
 	Write-Host " --------------------------------------------------------------------------------"
 	Write-Host ""
-	Write-Host "`nUpdating youtube-dl and ffmpeg files . . ." -ForegroundColor "Yellow"
+	Write-Host "`n[+] Updating youtube-dl and ffmpeg files . . ." -ForegroundColor "Yellow"
 	DownloadYoutube-dl
 	DownloadFfmpeg
-	Write-Host "`nUpdate completed successfully." -ForegroundColor "Green"
+	Write-Host "`n[x] Update completed successfully." -ForegroundColor "Green"
 	Start-Sleep 3
-	Write-Host "`nChecking for Dr. Ray updates . . . " -ForegroundColor "Yellow"
+	Write-Host "`n[+] Checking for Dr. Ray updates . . . " -ForegroundColor "Yellow"
 	UpdateScript
-	Write-Host "`nUpdate completed successfully." -ForegroundColor "Green"
+	Write-Host "`n[x] Update completed successfully." -ForegroundColor "Green"
 	mainRun
 }
 
 
 function drrayInstallCheck {
-	if (!(Test-path -Path "C:\Program Files (x86)\Dr. Downloader")) {
+	if (!(Test-path -Path "C:\Program Files (x86)\Dr. Ray Downloader")) {
 		Write-Host ""
 		Write-Host "[ERROR]: Dr. Ray Downloader is not installed. Would you like to install it?" -ForegroundColor "Red" -BackgroundColor "Black"
 		Write-Host ""
@@ -132,37 +130,36 @@ function drrayInstallCheck {
 
 
 function drrayInstall {
-	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 15
+	Write-Progress -Activity "[+] Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 15
 	Write-Host ""
-	Write-Host "Installing Dr. Ray Downloader . . ." -ForegroundColor "Yellow"
-	Write-Host ""
-	New-Item -ItemType Directory -Path "C:\ProgramData\Dr. Downloader" -Force -ErrorAction SilentlyContinue | out-null
-	New-Item -ItemType Directory -Path "C:\ProgramData\Dr. Downloader\Dr. Downloads" -Force -ErrorAction SilentlyContinue | out-null
-	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 40
-	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Downloader" -Force -ErrorAction SilentlyContinue | out-null
-	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Downloader\bin" -Force -ErrorAction SilentlyContinue | out-null
+	Write-Host "[+] Installing Dr. Ray Downloader . . ." -ForegroundColor "Yellow"
+	New-Item -ItemType Directory -Path $downloadlocation -Force -ErrorAction SilentlyContinue | out-null
+#	New-Item -ItemType Directory -Path "C:\ProgramData\Dr. Downloader\Dr. Downloads" -Force -ErrorAction SilentlyContinue | out-null
+	Write-Progress -Activity "[+] Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 40
+	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Ray Downloader" -Force -ErrorAction SilentlyContinue | out-null
+	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Ray Downloader\bin" -Force -ErrorAction SilentlyContinue | out-null
 	New-Item -ItemType Directory -Path "$StartFolder" -Force -ErrorAction SilentlyContinue | Out-Null
-	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 65
-	$WshShell = New-Object -comObject WScript.Shell
-	$Shortcut = $WshShell.CreateShortcut("C:\Users\Public\Desktop\Dr. Downloads.lnk")
-	$shortcut.TargetPath = "C:\ProgramData\Dr. Downloader\Dr. Downloads"
-	$shortcut.save()
-	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 90
-	Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Dr. Downloader" -Force
+	Write-Progress -Activity "[+] Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 65
+#	$WshShell = New-Object -comObject WScript.Shell
+#	$Shortcut = $WshShell.CreateShortcut("C:\Users\Public\Desktop\Dr. Downloads.lnk")
+#	$shortcut.TargetPath = "C:\ProgramData\Dr. Downloader\Dr. Downloads"
+#	$shortcut.save()
+	Write-Progress -Activity "[+] Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 90
+	Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Dr. Ray Downloader" -Force -ErrorAction SilentlyContinue
 	
 	TRY {
-		Copy-Item "$PSScriptRoot\dr-downloader-v3.ps1" -Destination "C:\Program Files (x86)\Dr. Downloader" -Force
-		$WshShell = New-Object -comObject WScript.Shell
-		$Shortcut = $WshShell.CreateShortcut("C:\Users\Public\Desktop\Dr. Downloader.lnk")
-		$shortcut.TargetPath = "C:\Program Files (x86)\Dr. Downloader\dr-downloader.ps1"
-		$shortcut.save()
+	#	Copy-Item "$PSScriptRoot\dr-downloader-v3.ps1" -Destination "C:\Program Files (x86)\Dr. Ray Downloader" -Force
+	#	$WshShell = New-Object -comObject WScript.Shell
+	#	$Shortcut = $WshShell.CreateShortcut("C:\Users\Public\Desktop\Dr. Ray Downloader.lnk")
+	#	$shortcut.TargetPath = "C:\Program Files (x86)\Dr. Ray Downloader\dr-downloader.ps1"
+	#	$shortcut.save()
 	} CATCH {
 		DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/dr-downloader.ps1" "C:\Program Files (x86)\Dr. Downloader\dr-downloader.ps1"
 	} FINALLY {
 		DownloadFFmpeg
 		DownloadYoutube-dl
 	}
-	Write-Progress -Activity "Installing Dr. Ray Downloader" -Status "Installing . . ." -Completed
+	Write-Progress -Activity "[+] Installing Dr. Ray Downloader" -Status "Installing . . ." -Completed
 }
 
 
@@ -224,16 +221,62 @@ function drrayHelp {
 	Write-Host "       application allows any user to download audio or video from media"
 	Write-Host "              websites such as YouTube, SoundCloud, LiveLeak, etc."
 	Write-Host ""
-	Write-Host "              ** When you are done, please exit using the #5 option ** "
+	Write-Host "        When you are done, please exit the application using the #5 option"
 	Write-Host ""
 	Write-Host ""
-	Read-Host "               Press enter to return to the main menu  "
+	Write-Host "        Press enter to return to the main menu or type UNINSTALL to"
+	Write-Host "         remove Dr. Ray Downloader from your PC. Uninstalling will"
+	Write-Host "                 not remove downloaded audio/video files."
+	Write-Host ""
+	Write-Host ""
+	$helpPrompt = (Read-Host "`n")
+	if ($helpPrompt -eq "uninstall" -or $helpPrompt -eq "Uninstall") {
+		drrayUninstall
+	} else {
+		mainRun
+	}
 }
 
 
 function drrayExit {
 	Start-Process $downloadlocation
 	exit 0
+}
+
+
+function drrayUninstall {
+	if (Test-Path -Path "C:\Program Files (x86)\Dr. Ray Downloader\*") {
+		Clear-Host
+		Write-Host ""
+		Write-Host "                              DR. RAY DOWNLOADER v3.0 "
+		Write-Host "                                      _____  "
+		Write-Host "                                     ( o o ) "
+		Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
+		Write-Host "                               DR. RAY     UNINSTALLER          "
+		Write-Host " --------------------------------------------------------------------------------"
+		Write-Host ""
+		Write-Host ""
+		Set-Location -Path $DesktopPath -ErrorAction SilentlyContinue
+		Write-Host "`n[+] Removing Start Menu Shortcuts . . ." -ForegroundColor "Yellow"
+		if (test-path -path $StartFolder) {
+			Remove-Item -Path $StartFolder -Force -ErrorAction SilentlyContinue
+		}
+		Write-Host "`n[+] Removing Dr. Ray Downloader Components . . ." -ForegroundColor "Yellow"
+		if (test-path -path "C:\Program Files (x86)\Dr. Ray Downloader\bin") {
+			Remove-Item -Path "C:\Program Files (x86)\Dr. Ray Downloader\bin" -Recurse -Force -ErrorAction SilentlyContinue
+		}
+		Write-Host "`n[+] Removing Dr. Ray Downloader Installation folder . . ." -ForegroundColor "Yellow"
+		if (test-path -path "C:\Program Files (x86)\Dr. Ray Downloader") {
+			Remove-Item -Path "C:\Program Files (x86)\Dr. Ray Downloader" -Recurse -Force -ErrorAction SilentlyContinue
+		}
+		Start-Sleep 5
+		if (!(Test-path -Path "C:\Program Files (x86)\Dr. Ray Downloader")) {
+			Write-Host "`n[x] Successfully uninstalled Dr. Ray Downloader!" -ForegroundColor "Green"
+			Write-Host "`n[x] Dr. Ray Downloader will now exit." -ForegroundColor "Green"
+			Write-Host ""
+			exit 0
+		}
+	}
 }
 
 
@@ -255,7 +298,7 @@ function mainRun {
 
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 20
 
-	if (!(test-path -path "C:\Program Files (x86)\Dr. Downloader\*")) {
+	if (!(test-path -path "C:\Program Files (x86)\Dr. Ray Downloader\*")) {
 		drrayInstallCheck
 	}
 	
@@ -284,7 +327,7 @@ function mainRun {
 		Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 75
 		if (-not($InstalledSoftware -like "*Microsoft Visual C++ 2010  x86 Redistributable*")) {
 			Write-Host "[ERROR]: Microsoft Visual C++ 2010 x86 Redistributable package must be installed. It can be downloaded here:`n
-			https://www.microsoft.com/en-US/download/details.aspx?id=5555" -ForegroundColor "Red"  -BackgroundColor "Black"
+			https://www.microsoft.com/en-us/download/details.aspx?id=26999" -ForegroundColor "Red"  -BackgroundColor "Black"
 			Write-Host ""
 			$msvisredistdownload = Read-Host "Should we download and install the Microsoft Visual C++ 2010 x86 Redistributable package?"
 			if ($msvisredistdownload -like "y" -or $msvisredistdownload -like "yes") {
@@ -295,7 +338,7 @@ function mainRun {
 		}
 	} Catch {
 		Write-Host "[ERROR]: Microsoft Visual C++ 2010 x86 Redistributable package must be installed. It can be downloaded here:" -ForegroundColor "Red"
-		Write-Host "https://www.microsoft.com/en-US/download/details.aspx?id=5555" -ForegroundColor "Red"
+		Write-Host "https://www.microsoft.com/en-us/download/details.aspx?id=26999" -ForegroundColor "Red"
 	}
 	
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Loading Dr. Ray Downloader . . ." -PercentComplete 90
@@ -318,7 +361,7 @@ function mainRun {
 		DownloadFFmpeg
 	}
 
-	Set-Location -Path "C:\Program Files (x86)\Dr. Downloader" -ErrorAction SilentlyContinue
+	Set-Location -Path "C:\Program Files (x86)\Dr. Ray Downloader" -ErrorAction SilentlyContinue
 
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Loading Dr. Ray Downloader . . ." -Completed
 
