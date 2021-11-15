@@ -5,9 +5,8 @@
 
 # ======================================================================================================= #
 # ======================================================================================================= #
-#
-# VARIABLES
-#
+# 										VARIABLES
+# ======================================================================================================= #
 # ======================================================================================================= #
 
 
@@ -18,16 +17,23 @@ $binpath = "C:\Program Files (x86)\Dr. Ray Downloader\bin"
 $DesktopPath = [Environment]::GetFolderPath("Desktop")
 $downloadlocation = "$DesktopPath\Dr. Ray Downloads"
 $tmpfolder = "C:\temp"
+$tmpbinpath = "C:\temp\Dr. Ray Downloader\bin"
 $RootFolder = "$PSScriptRoot"
 $ENV:Path += ";$binpath"
+$StartFolder = $ENV:APPDATA + "\Microsoft\Windows\Start Menu\Programs\Dr. Downloader"
+$drrayTempRun = 0
 
+#Param (
+#[Parameter(Position = 1, Mandatory = $false)]
+#[Switch]
+#$portable
+#)
 
 
 # ======================================================================================================= #
 # ======================================================================================================= #
-#
-# FUNCTIONS
-#
+# 										FUNCTIONS
+# ======================================================================================================= #
 # ======================================================================================================= #
 
 
@@ -41,23 +47,38 @@ Function DownloadFile {
 
 
 Function DownloadYoutube-dl {
-	Write-Host ""
-	Write-Host "[+] Downloading youtube-dl binary . . ." -ForegroundColor "Yellow"
+	Write-Host "`n[+] Downloading youtube-dl binary . . ." -ForegroundColor "Yellow"
 	DownloadFile "http://yt-dl.org/downloads/latest/youtube-dl.exe" "$binpath\dl.exe"
 }
 
 
 Function DownloadFFmpeg {
-	Write-Host ""
-	Write-Host "[+] Downloading ffmpeg files . . ." -ForegroundColor "Yellow"
+	Write-Host "`n[+] Downloading ffmpeg files . . ." -ForegroundColor "Yellow"
 	DownloadFile "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.7z" "$binpath\ffmpeg_latest.7z"
-	Write-Host ""
-	Write-Host "[+] Expanding ffmpeg 7-Zip archive . . ." -ForegroundColor "Yellow"
+	Write-Host "`n[+] Expanding ffmpeg 7-Zip archive . . ." -ForegroundColor "Yellow"
 #	Expand-Archive -Path "$binpath\ffmpeg_latest.7z" -DestinationPath "$binpath"
 	Expand-7Zip -ArchiveFileName "$binpath\ffmpeg_latest.7z" -TargetPath "$binpath"
 	Copy-Item -Path "$binpath\ffmpeg-*\bin\*" -Destination "$binpath" -Recurse -Filter "*.exe" -Force -ErrorAction SilentlyContinue
 	Remove-Item -Path "$binpath\ffmpeg_latest.7z" -Force -ErrorAction SilentlyContinue
 	Remove-Item -Path "$binpath\ffmpeg-*" -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+
+Function DownloadTEMPYoutube-dl {
+	Write-Host "`n[+] Downloading youtube-dl binary . . ." -ForegroundColor "Yellow"
+	DownloadFile "http://yt-dl.org/downloads/latest/youtube-dl.exe" "C:\temp\Dr. Ray Downloader\bin\dl.exe"
+}
+
+
+Function DownloadTEMPFFmpeg {
+	Write-Host "`n[+] Downloading ffmpeg files . . ." -ForegroundColor "Yellow"
+	DownloadFile "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.7z" "C:\temp\Dr. Ray Downloader\bin\ffmpeg_latest.7z"
+	Write-Host "`n[+] Expanding ffmpeg 7-Zip archive . . ." -ForegroundColor "Yellow"
+#	Expand-Archive -Path "$binpath\ffmpeg_latest.7z" -DestinationPath "$binpath"
+	Expand-7Zip -ArchiveFileName "C:\temp\Dr. Ray Downloader\bin\ffmpeg_latest.7z" -TargetPath "$binpath"
+	Copy-Item -Path "C:\temp\Dr. Ray Downloader\bin\ffmpeg-*\bin\*" -Destination "C:\temp\Dr. Ray Downloader\bin" -Recurse -Filter "*.exe" -Force -ErrorAction SilentlyContinue
+	Remove-Item -Path "C:\temp\Dr. Ray Downloader\bin\ffmpeg_latest.7z" -Force -ErrorAction SilentlyContinue
+	Remove-Item -Path "C:\temp\Dr. Ray Downloader\bin\ffmpeg-*" -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 
@@ -99,11 +120,10 @@ function drrayUpdate {
 	Write-Host "                               DR. RAY     UPDATER          "
 	Write-Host " --------------------------------------------------------------------------------"
 	Write-Host ""
-	Write-Host "`n[+] Updating youtube-dl and ffmpeg files . . ." -ForegroundColor "Yellow"
+	Write-Host "`n[+] Starting Dr. Ray Updater - Checking files . . ." -ForegroundColor "Yellow"
 	DownloadYoutube-dl
 	DownloadFfmpeg
-	Write-Host "`n[x] Update completed successfully." -ForegroundColor "Green"
-	Start-Sleep 3
+	Start-Sleep 1
 	Write-Host "`n[+] Checking for Dr. Ray updates . . . " -ForegroundColor "Yellow"
 	UpdateScript
 	Write-Host "`n[x] Update completed successfully." -ForegroundColor "Green"
@@ -113,17 +133,20 @@ function drrayUpdate {
 
 function drrayInstallCheck {
 	if (!(Test-path -Path "C:\Program Files (x86)\Dr. Ray Downloader")) {
-		Write-Host ""
-		Write-Host "[ERROR]: Dr. Ray Downloader is not installed. Would you like to install it?" -ForegroundColor "Red" -BackgroundColor "Black"
-		Write-Host ""
+		Write-Host "`n[ERROR]: Dr. Ray Downloader is not installed. Would you like to install it?`n" -ForegroundColor "Red" -BackgroundColor "Black"
 		$installdrray = (Read-Host "Y/N")
 		if ($installdrray -like "y" -or $installdrray -like "yes") {
 			drrayInstall
 		} else {
-			Write-Host ""
-			Write-Host "[ERROR]: Missing dependencies. Please install Dr. Ray Downloader to continue." -ForegroundColor "Red" -BackgroundColor "Black"
-			Write-Host ""
-			exit 1
+			Write-Host "`n[ERROR]: Missing dependencies. Would you like to install Dr. Ray Downloader in a temporary location?`n" -ForegroundColor "Red" -BackgroundColor "Black"
+			$installDrRayTemp = (Read-Host "Y/N")
+			if ($installDrRayTemp -like "y" -or $installDrRayTemp -like "yes") {
+				$drrayTempRun = 1
+				drrayTempInstall
+			} else {
+				Write-Host "`n[ERROR]: Dr. Ray Downloader was not installed. Please install Dr. Ray Downloader to continue.`n" -ForegroundColor "Red" -BackgroundColor "Black"
+				exit 1
+			}
 		}
 	}
 }
@@ -131,10 +154,8 @@ function drrayInstallCheck {
 
 function drrayInstall {
 	Write-Progress -Activity "[+] Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 15
-	Write-Host ""
-	Write-Host "[+] Installing Dr. Ray Downloader . . ." -ForegroundColor "Yellow"
+	Write-Host "`n[+] Installing Dr. Ray Downloader . . ." -ForegroundColor "Yellow"
 	New-Item -ItemType Directory -Path $downloadlocation -Force -ErrorAction SilentlyContinue | out-null
-#	New-Item -ItemType Directory -Path "C:\ProgramData\Dr. Downloader\Dr. Downloads" -Force -ErrorAction SilentlyContinue | out-null
 	Write-Progress -Activity "[+] Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 40
 	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Ray Downloader" -Force -ErrorAction SilentlyContinue | out-null
 	New-Item -ItemType Directory -Path "C:\Program Files (x86)\Dr. Ray Downloader\bin" -Force -ErrorAction SilentlyContinue | out-null
@@ -146,7 +167,6 @@ function drrayInstall {
 #	$shortcut.save()
 	Write-Progress -Activity "[+] Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 90
 	Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Dr. Ray Downloader" -Force -ErrorAction SilentlyContinue
-	
 	TRY {
 	#	Copy-Item "$PSScriptRoot\dr-downloader-v3.ps1" -Destination "C:\Program Files (x86)\Dr. Ray Downloader" -Force
 	#	$WshShell = New-Object -comObject WScript.Shell
@@ -160,6 +180,29 @@ function drrayInstall {
 		DownloadYoutube-dl
 	}
 	Write-Progress -Activity "[+] Installing Dr. Ray Downloader" -Status "Installing . . ." -Completed
+}
+
+
+function drrayTempInstall {
+	Write-Progress -Activity "[+] Installing Dr. Ray Downloader in a temporary location. . ." -Status "Temporary Installation. . ." -PercentComplete 15
+	Write-Host "`n[+] Installing TEMP Dr. Ray Downloader . . ." -ForegroundColor "Yellow"
+	New-Item -ItemType Directory -Path $tmpfolder -Force -ErrorAction SilentlyContinue | out-null
+	New-Item -ItemType Directory -Path "C:\temp\Dr. Ray Downloader" -Force -ErrorAction SilentlyContinue | out-null
+	Write-Progress -Activity "[+] Installing TEMP Dr. Ray Downloader" -Status "Temporary Installation. . ." -PercentComplete 40
+	New-Item -ItemType Directory -Path $tmpbinpath -Force -ErrorAction SilentlyContinue | out-null
+	Write-Progress -Activity "[+] Installing TEMP Dr. Ray Downloader" -Status "Temporary Installation. . ." -PercentComplete 65
+	Add-MpPreference -ExclusionPath "C:\temp\Dr. Ray Downloader" -Force -ErrorAction SilentlyContinue
+	Write-Progress -Activity "[+] Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 90
+	TRY {
+		DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/dr-downloader.ps1" "C:\temp\Dr. Ray Downloader\dr-downloader.ps1"
+	} CATCH {
+		#DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/dr-downloader.ps1" "C:\temp\Dr. Ray Downloader\dr-downloader.ps1"
+	} FINALLY {
+		DownloadTEMPFFmpeg
+		DownloadTEMPYoutube-dl
+	}
+	Write-Progress -Activity "[+] Installing TEMP Dr. Ray Downloader" -Status "Temporary Installation. . ." -Completed
+	Set-Location -Path "C:\temp\Dr. Ray Downloader" -ErrorAction SilentlyContinue
 }
 
 
@@ -230,7 +273,7 @@ function drrayHelp {
 	Write-Host ""
 	Write-Host ""
 	$helpPrompt = (Read-Host "`n")
-	if ($helpPrompt -eq "uninstall" -or $helpPrompt -eq "Uninstall") {
+	if ($helpPrompt -like "uninstall") {
 		drrayUninstall
 	} else {
 		mainRun
@@ -240,6 +283,7 @@ function drrayHelp {
 
 function drrayExit {
 	Start-Process $downloadlocation
+	Set-Location $downloadlocation
 	exit 0
 }
 
@@ -282,26 +326,21 @@ function drrayUninstall {
 
 # ======================================================================================================= #
 # ======================================================================================================= #
-#
-# MAIN FUNCTION
-#
+# 									MAIN FUNCTION
+# ======================================================================================================= #
 # ======================================================================================================= #
 
 
 function mainRun {
 	
-#	if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {  
-# 		 $arguments = "& '" +$myinvocation.mycommand.definition + "'"
-#  	Start-Process powershell -Verb runAs -ArgumentList $arguments
-#  	Break
-#	}
+	if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {  
+ 		 $arguments = "& '" +$myinvocation.mycommand.definition + "'"
+  	Start-Process powershell -Verb runAs -ArgumentList $arguments
+  	Break
+	}
 
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 20
 
-	if (!(test-path -path "C:\Program Files (x86)\Dr. Ray Downloader\*")) {
-		drrayInstallCheck
-	}
-	
 	If (([environment]::Is64BitOperatingSystem) -eq $false) {
 		Write-Host "[ERROR]: Dr. Ray Downloader only supports 64 bit Operating Systems." -ForegroundColor "Red" -BackgroundColor "Black"
 		End
@@ -311,6 +350,14 @@ function mainRun {
 		Write-Host "[ERROR]: Your PowerShell installation is not version 5.0 or greater.`n        This script requires PowerShell version 5.0 or greater to function.`n        You can download PowerShell version 5.0 at:`n            https://www.microsoft.com/en-us/download/details.aspx?id=50395" -ForegroundColor "Red" -BackgroundColor "Black"
 		Start-Sleep 10
 		End
+	}
+	
+#	if (!(test-path -path "C:\Program Files (x86)\Dr. Ray Downloader\*")) {
+#		drrayInstallCheck
+#	}
+
+	if ($drrayTempRun -eq 0) {
+		drrayInstallCheck
 	}
 	
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Checking main files . . ." -PercentComplete 30
@@ -351,18 +398,31 @@ function mainRun {
 		New-Item -ItemType Directory -Path $tmpfolder -Force -ErrorAction SilentlyContinue | Out-Null
 	}
 	
-	If (!(test-path -path "$binpath\dl.exe")) {
-		Write-Host "`nYouTube-dl not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
-		DownloadYoutube-dl
+	if ($drrayTempRun -eq "1") {
+		If (!(test-path -path "$tmpbinpath\dl.exe")) {
+			Write-Host "`nYouTube-dl not found. Downloading and installing to: ""$tmpbinpath"" ...`n" -ForegroundColor "Yellow"
+			DownloadTEMPYoutube-dl
+		}
+	} elseif ($drrayTempRun -eq "0") {
+		If (!(test-path -path "$binpath\dl.exe")) {
+			Write-Host "`nYouTube-dl not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
+			DownloadYoutube-dl
+		}
 	}
 	
-	if (!(test-path -path "$binpath\ffmpeg.exe")) {
-		Write-Host "`nffmpeg dependencies not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
-		DownloadFFmpeg
+	if ($drrayTempRun -eq "1") {
+		if (!(test-path -path "$tmpbinpath\ffmpeg.exe")) {
+			Write-Host "`nffmpeg dependencies not found. Downloading and installing to: ""$tmpbinpath"" ...`n" -ForegroundColor "Yellow"
+			DownloadTEMPFFmpeg
+		}
+	} elseif ($drrayTempRun -eq "0") {
+		if (!(test-path -path "$binpath\ffmpeg.exe")) {
+			Write-Host "`nffmpeg dependencies not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
+			DownloadFFmpeg
+		}
 	}
 
 	Set-Location -Path "C:\Program Files (x86)\Dr. Ray Downloader" -ErrorAction SilentlyContinue
-
 	Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Loading Dr. Ray Downloader . . ." -Completed
 
 	Do {
