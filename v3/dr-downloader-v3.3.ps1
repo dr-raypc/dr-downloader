@@ -116,7 +116,7 @@ Function UpdateScript {
 
 function drrayUpdate {
 	Write-Host ""
-	Write-Host "                              DR. RAY DOWNLOADER v3.0 "
+	Write-Host "                              DR. RAY DOWNLOADER v3.3 "
 	Write-Host "                                      _____  "
 	Write-Host "                                     ( o o ) "
 	Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
@@ -211,7 +211,7 @@ function drrayTempInstall {
 
 function audioRun {
 	Write-Host ""
-	Write-Host "                              DR. RAY DOWNLOADER v3.0 "
+	Write-Host "                              DR. RAY DOWNLOADER v3.3 "
 	Write-Host "                                      _____  "
 	Write-Host "                                     ( o o ) "
 	Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
@@ -233,7 +233,7 @@ function audioRun {
 
 function  videoRun {
 	Write-Host ""
-	Write-Host "                              DR. RAY DOWNLOADER v3.0 "
+	Write-Host "                              DR. RAY DOWNLOADER v3.3 "
 	Write-Host "                                      _____  "
 	Write-Host "                                     ( o o ) "
 	Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
@@ -255,7 +255,7 @@ function  videoRun {
 
 function drrayHelp {
 	Write-Host ""
-	Write-Host "                              DR. RAY DOWNLOADER v3.0 "
+	Write-Host "                              DR. RAY DOWNLOADER v3.3 "
 	Write-Host "                                      _____  "
 	Write-Host "                                     ( o o ) "
 	Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
@@ -295,7 +295,7 @@ function drrayUninstall {
 	if (Test-Path -Path "C:\Program Files (x86)\Dr. Ray Downloader\*") {
 		Clear-Host
 		Write-Host ""
-		Write-Host "                              DR. RAY DOWNLOADER v3.0 "
+		Write-Host "                              DR. RAY DOWNLOADER v3.3"
 		Write-Host "                                      _____  "
 		Write-Host "                                     ( o o ) "
 		Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
@@ -431,7 +431,7 @@ function mainRun {
 	Do {
 		Write-Host ""
 		Write-Host ""
-		Write-Host "                              DR. RAY DOWNLOADER v3.0 "
+		Write-Host "                              DR. RAY DOWNLOADER v3.3"
 		Write-Host "                                      _____  "
 		Write-Host "                                     ( o o ) "
 		Write-Host " --------------------------------oOOo-( _ )-oOOo--------------------------------- "
