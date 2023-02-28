@@ -14,7 +14,7 @@
 
 Write-Progress -Activity "Starting Dr. Ray Downloader" -Status "Initializing variables . . ." -PercentComplete 10
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-[Version]$RunningVersion = '3.0.2.0'
+[Version]$RunningVersion = '3.0.3.0'
 $binpath = "C:\Program Files (x86)\Dr. Ray Downloader\bin"
 $DesktopPath = [Environment]::GetFolderPath("Desktop")
 #$downloadlocation = "$DesktopPath\Dr. Ray Downloads"
@@ -49,7 +49,7 @@ Function DownloadFile {
 }
 
 
-Function DownloadYoutube-dl {
+Function Update-Youtube-dl {
 	Write-Host "`n[+] Downloading youtube-dl binary . . ." -ForegroundColor "Yellow"
 	DownloadFile "http://yt-dl.org/downloads/latest/youtube-dl.exe" "$binpath\dl.exe"
 }
@@ -67,9 +67,9 @@ Function DownloadFFmpeg {
 }
 
 
-Function DownloadTEMPYoutube-dl {
+Function Update-TEMPYoutube-dl {
 	Write-Host "`n[+] Downloading youtube-dl binary . . ." -ForegroundColor "Yellow"
-	DownloadFile "http://yt-dl.org/downloads/latest/youtube-dl.exe" "C:\temp\Dr. Ray Downloader\bin\dl.exe"
+	DownloadFile "https://github.com/dr-raypc/dr-downloader/raw/main/bin/dl.exe" "C:\temp\Dr. Ray Downloader\bin\dl.exe"
 }
 
 
@@ -87,12 +87,12 @@ Function DownloadTEMPFFmpeg {
 
 Function UpdateScript {
 	DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/bin/drray-version" "$tmpfolder\version-file.txt"
-	[Version]$NewestVersion = Get-Content "$tmpfolder\version-file.txt" | Select -Index 0
+	[Version]$NewestVersion = Get-Content "$tmpfolder\version-file.txt" | Select-Object -Index 0
 	Remove-Item -Path "$tmpfolder\version-file.txt" -Force
 	
 	If ($NewestVersion -gt $RunningVersion) {
 		Write-Host "`nA new version of Dr. Ray Downloader is available: v$NewestVersion" -ForegroundColor "Yellow"
-		$MenuOption = Read-Host "`nUpdate to this version? [y/n]" -ForegroundColor "Yellow"
+		$MenuOption = Read-Host "`nUpdate to this version? [y/n]"
 		
 		If ($MenuOption -like "y" -or $MenuOption -like "yes") {
 			DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/dr-downloader.ps1" "C:\Program Files (x86)\Dr. Ray Downloader\dr-downloader.ps1"
@@ -124,7 +124,7 @@ function drrayUpdate {
 	Write-Host " --------------------------------------------------------------------------------"
 	Write-Host ""
 	Write-Host "`n[+] Starting Dr. Ray Updater - Checking files . . ." -ForegroundColor "Yellow"
-	DownloadYoutube-dl
+	Update-Youtube-dl
 	DownloadFfmpeg
 	Start-Sleep 1
 	Write-Host "`n[+] Checking for Dr. Ray updates . . . " -ForegroundColor "Yellow"
@@ -180,7 +180,7 @@ function drrayInstall {
 		DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/dr-downloader.ps1" "C:\Program Files (x86)\Dr. Downloader\dr-downloader.ps1"
 	} FINALLY {
 		DownloadFFmpeg
-		DownloadYoutube-dl
+		Update-Youtube-dl
 	}
 	Write-Progress -Activity "[+] Installing Dr. Ray Downloader" -Status "Installing . . ." -Completed
 }
@@ -202,7 +202,7 @@ function drrayTempInstall {
 		#DownloadFile "https://raw.githubusercontent.com/dr-raypc/dr-downloader/main/dr-downloader.ps1" "C:\temp\Dr. Ray Downloader\dr-downloader.ps1"
 	} FINALLY {
 		DownloadTEMPFFmpeg
-		DownloadTEMPYoutube-dl
+		Update-TEMPYoutube-dl
 	}
 	Write-Progress -Activity "[+] Installing TEMP Dr. Ray Downloader" -Status "Temporary Installation. . ." -Completed
 	Set-Location -Path "C:\temp\Dr. Ray Downloader" -ErrorAction SilentlyContinue
@@ -404,12 +404,12 @@ function mainRun {
 	if ($drrayTempRun -eq "1") {
 		If (!(test-path -path "$tmpbinpath\dl.exe")) {
 			Write-Host "`nYouTube-dl not found. Downloading and installing to: ""$tmpbinpath"" ...`n" -ForegroundColor "Yellow"
-			DownloadTEMPYoutube-dl
+			Update-TEMPYoutube-dl
 		}
 	} elseif ($drrayTempRun -eq "0") {
 		If (!(test-path -path "$binpath\dl.exe")) {
 			Write-Host "`nYouTube-dl not found. Downloading and installing to: ""$binpath"" ...`n" -ForegroundColor "Yellow"
-			DownloadYoutube-dl
+			Update-Youtube-dl
 		}
 	}
 	
@@ -445,11 +445,11 @@ function mainRun {
 		Write-Host " --------------------------------------------------------------------------------"
 		Write-Host ""
 		Write-Host ""
-		$input = Read-Host "     Execute Command "
+		$inputCommand = Read-Host "     Execute Command "
 		Write-Host ""
 		Write-Host ""
 
-		switch ($input) {
+		switch ($inputCommand) {
 			1 {
 					audioRun
 				}
@@ -466,7 +466,7 @@ function mainRun {
 					drrayExit
 				}
 		}
-	} Until ($input -eq 5)
+	} Until ($inputCommand -eq 5)
 }
 
 mainRun
