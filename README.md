@@ -1,6 +1,6 @@
-# dr ray downloader
+# dr-downloader
 
-Dr. Ray Downloader (or Dr. Downloader) is a small, lightweight application coded in BATCH/PowerShell that operates the youtube-dl command line. This application allows any user to download audio or video from media websites such as YouTube, SoundCloud, LiveLeak, etc. 
+Dr. Downloader is a small, lightweight application coded in BATCH/PowerShell that operates the yt-dlp command line. This application allows any user to download audio or video from media websites such as YouTube, SoundCloud, LiveLeak, etc. 
 
 # Main Menu
 
