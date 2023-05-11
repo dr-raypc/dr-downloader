@@ -51,14 +51,14 @@ Function DownloadFile {
 
 Function Update-Youtube-dl {
 	Write-Host "`n[+] Downloading youtube-dl binary . . ." -ForegroundColor "Yellow"
-	DownloadFile "http://yt-dl.org/downloads/latest/youtube-dl.exe" "$binpath\dl.exe"
+	DownloadFile "https://github.com/dr-raypc/dr-downloader/blob/main/bin/dl.exe" "$binpath\dl.exe"
 }
 
 
 Function DownloadFFmpeg {
-	Write-Host "`n[+] Downloading ffmpeg files . . ." -ForegroundColor "Yellow"
+	Write-Host "`n[+] Downloading ffmpeg files. . ." -ForegroundColor "Yellow"
 	DownloadFile "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.7z" "$binpath\ffmpeg_latest.7z"
-	Write-Host "`n[+] Expanding ffmpeg 7-Zip archive . . ." -ForegroundColor "Yellow"
+	Write-Host "`n[+] Expanding ffmpeg 7-Zip archive. . ." -ForegroundColor "Yellow"
 #	Expand-Archive -Path "$binpath\ffmpeg_latest.7z" -DestinationPath "$binpath"
 	Expand-7Zip -ArchiveFileName "$binpath\ffmpeg_latest.7z" -TargetPath "$binpath"
 	Copy-Item -Path "$binpath\ffmpeg-*\bin\*" -Destination "$binpath" -Recurse -Filter "*.exe" -Force -ErrorAction SilentlyContinue
@@ -68,15 +68,15 @@ Function DownloadFFmpeg {
 
 
 Function Update-TEMPYoutube-dl {
-	Write-Host "`n[+] Downloading youtube-dl binary . . ." -ForegroundColor "Yellow"
+	Write-Host "`n[+] Downloading youtube-dl binary. . ." -ForegroundColor "Yellow"
 	DownloadFile "https://github.com/dr-raypc/dr-downloader/raw/main/bin/dl.exe" "C:\temp\Dr. Ray Downloader\bin\dl.exe"
 }
 
 
 Function DownloadTEMPFFmpeg {
-	Write-Host "`n[+] Downloading ffmpeg files . . ." -ForegroundColor "Yellow"
+	Write-Host "`n[+] Downloading ffmpeg files. . ." -ForegroundColor "Yellow"
 	DownloadFile "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.7z" "C:\temp\Dr. Ray Downloader\bin\ffmpeg_latest.7z"
-	Write-Host "`n[+] Expanding ffmpeg 7-Zip archive . . ." -ForegroundColor "Yellow"
+	Write-Host "`n[+] Expanding ffmpeg 7-Zip archive. . ." -ForegroundColor "Yellow"
 #	Expand-Archive -Path "$binpath\ffmpeg_latest.7z" -DestinationPath "$binpath"
 	Expand-7Zip -ArchiveFileName "C:\temp\Dr. Ray Downloader\bin\ffmpeg_latest.7z" -TargetPath "$binpath"
 	Copy-Item -Path "C:\temp\Dr. Ray Downloader\bin\ffmpeg-*\bin\*" -Destination "C:\temp\Dr. Ray Downloader\bin" -Recurse -Filter "*.exe" -Force -ErrorAction SilentlyContinue
@@ -168,6 +168,10 @@ function drrayInstall {
 #	$Shortcut = $WshShell.CreateShortcut("C:\Users\Public\Desktop\Dr. Downloads.lnk")
 #	$shortcut.TargetPath = "C:\ProgramData\Dr. Downloader\Dr. Downloads"
 #	$shortcut.save()
+	if (-not(Get-InstalledModule 7Zip4PowerShell -ErrorAction SilentlyContinue)) {
+		Set-PSRepository PSGallery -InstallationPolicy Trusted
+		Install-Module -Name 7Zip4PowerShell -Confirm:$false -Force
+	}
 	Write-Progress -Activity "[+] Installing Dr. Ray Downloader" -Status "Installing . . ." -PercentComplete 90
 	Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Dr. Ray Downloader" -Force -ErrorAction SilentlyContinue
 	TRY {
@@ -321,6 +325,7 @@ function drrayUninstall {
 			Write-Host "`n[x] Successfully uninstalled Dr. Ray Downloader!" -ForegroundColor "Green"
 			Write-Host "`n[x] Dr. Ray Downloader will now exit." -ForegroundColor "Green"
 			Write-Host ""
+			Set-Location "C:\temp"
 			exit 0
 		}
 	}
